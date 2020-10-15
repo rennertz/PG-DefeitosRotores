@@ -1,19 +1,21 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+#from scipy.signal import periodogram
 
-# TODO: avaliar se vale a pena reduzir a taxa de amostragem já no pd.read_csv
-# 		utilizando o atributo skiprows=list(range(0, 250000, 10)
+def extract_features(file_adress):
+	# reduz o samplig frequency 'ratio' vezes, tomando apenas 1 a cada 'ratio' sinais
+	ratio = 50
+	sampling_freq=50000/ratio # a ser usado no fft
+	skip=[i for i in range(0,250000) if i%ratio] # poupa apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão
 
-#def extract_fft_from_file(file_adress)
+	signals = pd.read_csv(file_adress, header=None, 
+                      	  names=['ac1rad','ac1ax','ac1tg','ac2rad','ac2ax','ac2tg','tachometer','microphone'],
+                      	  skiprows=skip)
 
-signals = pd.read_csv('mafaulda/horizontal-misalignment/0.5mm/12.288.csv', header=None, 
-	names=['ac1rad','ac1ax','ac1tg','ac2rad','ac2ax','ac2tg','tachometer','microphone'])
-# um data frame com shape (250000, 8)
+	complex_fft = np.fft.rfft(signals['tachometer'])
+	real_fft = np.abs(complex_fft)
+	freq_axis = np.linspace(0, sampling_freq/2+1, len(real_fft)) # a frequência de Nyquist é sampling_freq/2
+	fundamental = freq_axis[real_fft.argmax()]
 
-# reduz o samplig frequency de 50kHz para 10kHz
-signals = signals.iloc[[5*i for i in range(round(250000/5))],:]
-fft = np.fft.rfft(signals['ac1rad'])
-
-plt.plot(np.abs(fft))
-plt.show()
+	return {'fundamental': fundamental}
