@@ -10,7 +10,7 @@ def extract_features(file_adress):
 	skip=[i for i in range(0,250000) if i%ratio] # poupa apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão
 
 	signals = pd.read_csv(file_adress, header=None, 
-                      	  names=['ac1rad','ac1ax','ac1tg','ac2rad','ac2ax','ac2tg','tachometer','microphone'],
+                      	  names=['tachometer','ac1rad','ac1ax','ac1tg','ac2rad','ac2ax','ac2tg','microphone'],
                       	  skiprows=skip)
 
 	complex_fft = np.fft.rfft(signals['tachometer'])
