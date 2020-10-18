@@ -6,9 +6,6 @@
 #
 
 # NOTICE
-#  - Para (sobre-)escrever o dataset, descomente as linhas 124-126
-#  - Para extrair as features, descomente as linhas 56,57, 86,87 
-#    e 109,110 (o tempo de execução será superior a 5 min)
 #  - Novas features podem ser adicionadas em process_fft.extract_features
 
 import os
@@ -53,8 +50,8 @@ for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
 						'rot_vel': velocidade[:-4]}
 
 			# fase de extração de características (toma muito tempo!)
-			#features = extract_features("mafaulda/{}/{}/{}".format(defeito, desalinhamento,velocidade))
-			#data.update(features)
+			features = extract_features("mafaulda/{}/{}/{}".format(defeito, desalinhamento,velocidade))
+			data.update(features)
 
 			# exibe barra de status para o usuário
 			if defeito == 'horizontal-misalignment':
@@ -83,8 +80,8 @@ for i, desbalanceamento in enumerate(os.listdir("mafaulda/imbalance")):
 				'rot_vel': velocidade[:-4]}
 
 		# fase de extração de características (toma muito tempo!)
-		#features = extract_features("mafaulda/imbalance/{}/{}".format(desbalanceamento, velocidade))
-		#data.update(features)
+		features = extract_features("mafaulda/imbalance/{}/{}".format(desbalanceamento, velocidade))
+		data.update(features)
 
 		# exibe barra de status para o usuário
 		print_status_bar((i+j/48)/7)
@@ -106,8 +103,8 @@ for i, velocidade in enumerate(os.listdir("mafaulda/normal")):
 			'rot_vel': velocidade[:-4]}
 
 	# fase de extração de características (toma muito tempo!)
-	#features = extract_features("mafaulda/normal/{}".format(velocidade))
-	#data.update(features)
+	features = extract_features("mafaulda/normal/{}".format(velocidade))
+	data.update(features)
 
 	# exibe barra de status para o usuário
 	print_status_bar(i/48)
@@ -123,9 +120,9 @@ df_all = pd.concat([df_normal,df_desalinhamento, df_desbalanceamento])
 df_all.info()
 
 # (sobre-)escreve um cvs com todos os dados
-#f = open("data.csv", "w")
-#df_all.to_csv(f,line_terminator='\n',index=False)
-#f.close()
+f = open("data.csv", "w")
+df_all.to_csv(f,line_terminator='\n',index=False)
+f.close()
 
 total_duration = time.time()-start_time
 print('\nExecução total em {} minutos e {:.3f} segundos'.format(int(total_duration//60),total_duration%60))
