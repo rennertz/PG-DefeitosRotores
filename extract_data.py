@@ -6,12 +6,12 @@
 #
 
 # NOTICE
-#  - Novas features podem ser adicionadas em process_fft.extract_features
+#  - Novas features podem ser adicionadas em feat_functions.extract_features
 
 import os
 import pandas as pd
 import numpy as np
-from process_fft import extract_features
+from feat_functions import extract_features
 import sys # para imprimir status de importação
 
 import time # permite marcar o tempo de execução
