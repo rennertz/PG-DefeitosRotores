@@ -20,7 +20,7 @@ Para este trabalho, será utilizada a base de dados [MaFaulDa](http://www02.smt.
 
 ### Gerando a matriz de características localmente (via script)
 
-Note que a base MaFaulda não está presente no repositório. Ela deve ser baixada e descompactada em uma pasta nomeada `mafaulda` dentro do diretorio raiz. Nesta pasta devem estar presentes ao menos as subpastas `normal`, `horizontal-misalignment`, `vertical-misalignment` e `imbalance`, que são as condições estudadas. Montado e carregado o diretório, basta executar o script [extract_data.py](extract_data.py) e o arquivo com as características *data.csv* será sobrescrito. Abaixo uma previsualização do script sendo executado.
+Note que a base MaFaulda não está presente no repositório. Ela deve ser baixada e descompactada na pasta  `mafaulda` dentro do diretorio raiz. Nesta pasta devem estar presentes ao menos as subpastas `normal`, `horizontal-misalignment`, `vertical-misalignment` e `imbalance`, que são as condições estudadas. Montado e carregado o diretório, basta executar o script [extract_data.py](extract_data.py) e o arquivo com as características *data.csv* será sobrescrito. Abaixo uma previsualização do script sendo executado.
 
 ![Exemplo de carregamento](https://media.giphy.com/media/qreDqbIdpIINndTqZ2/giphy.gif)
 
