@@ -18,4 +18,4 @@ Para o meu trabalho, será utilizada a base de dados [MAFAULDA](http://www02.smt
 
 Se o seu objetivo for prontamente desenvolver modelos ML em cima das mesma base e com as mesmas características, as etapas anteriores não serão necessárias. Basta utilizar imediatamente o arquivo [data.csv](data.csv). No entanto, é encorajado a interação com o script, sujestões de melhoria e eventuais acréscimos de features.
 
-![Exemplo de carregamento](https://media.giphy.com/media/Z1xvqNpMSCB8tOLtFf/giphy.gif)
+![Exemplo de carregamento](https://media.giphy.com/media/qreDqbIdpIINndTqZ2/giphy.gif)
