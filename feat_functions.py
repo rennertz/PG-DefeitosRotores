@@ -6,27 +6,27 @@ import matplotlib.pyplot as plt
 
 
 def extract_features(file_adress):
-    # reduz o samplig frequency 'ratio' vezes, tomando apenas 1 a cada 'ratio' sinais
+    # reduz a frequência da aquisição 'ratio' vezes, tomando apenas 1 a cada 'ratio' amostras temporais
+    # note: 50 kHz é a frequência de aquisição original dos dados! 
     ratio = 50
-    sampling_freq = 50000/ratio  # a ser usado no fft
-    # poupa apenas as linhas múltiplas de 'ratio'
-    skip = [i for i in range(0, 250000) if i % ratio]
-    # e lista as demais para exclusão
+    sampling_freq = 50000/ratio
 
+    # poupa para a leitura apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão em 'skip'
+    skip = [i for i in range(0, 250000) if i % ratio]
     signals = pd.read_csv(file_adress, header=None,
                           names=['tachometer', 'ac1rad', 'ac1ax', 'ac1tg',
                                  'ac2rad', 'ac2ax', 'ac2tg', 'microphone'],
                           skiprows=skip)
 
-    # Produz o FFT para cada sinal
-    # sinal real, logo rfft representa apenas metade da transformada
+    # produz a transformada de Fourrier para cada sinal real. 
+    # a rfft representa apenas a metade relevante da transformada. Sinais reais produzem transformadas simétricas
     signals_fft = signals.apply(np.fft.rfft, axis=0)
-    # Obtém valor absoluto a partir dos complexos
+    # obtém valor absoluto a partir dos complexos
     signals_fft = signals_fft.apply(np.abs)
 
     # gera o eixo da frequência, dado que a frequência de Nyquist é sampling_freq/2
-    signals_fft['freq_ax'] = np.linspace(
-        0, sampling_freq/2+1, signals_fft.shape[0])
+    signals_fft['freq_ax'] = np.linspace(0, sampling_freq/2+1, 
+    									 signals_fft.shape[0])
 
     # gera as features, começando pela fundamental
     fundamental = extract_fundamental(signals_fft)

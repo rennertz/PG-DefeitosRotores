@@ -1,12 +1,13 @@
-#
-# Código responsável por estruturar o dataset PRINCIPAL do projeto
-#
-# Este dataset deve conter TODAS as características julgadas
-# relevantes para o terinamento do modelo ML
-#
+'''
+Código responsável por estruturar o dataset PRINCIPAL do projeto
 
-# NOTICE
-#  - Novas features podem ser adicionadas em feat_functions.extract_features
+Este dataset deve conter TODAS as características julgadas
+relevantes para o terinamento do modelo ML
+
+
+NOTICE
+ - Novas features podem ser adicionadas em feat_functions.extract_features
+'''
 
 import os
 import pandas as pd
@@ -16,10 +17,6 @@ import sys  # para imprimir status de importação
 
 import time  # permite marcar o tempo de execução
 start_time = time.time()
-
-# Extração dos tipos de defeitos presentes
-# defect_type=os.listdir("mafaulda")
-# for d in defect_type: print(d)
 
 
 def print_status_bar(status):
@@ -31,14 +28,16 @@ def print_status_bar(status):
 
 # Extraindo defeitos de desalinhamento
 df_desalinhamento = pd.DataFrame(columns=['defect_type', 'hor_mis', 'ver_mis', 'rot_vel'])
+# códigos para desalinhamento horizontal e vertical foram reunidos para evitra repetição
 for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
-    print('\nCarregando desalinhamento {}'.format(defeito.split('-')[0]))
+    print('\nCarregando desalinhamento', defeito.split('-')[0])
     instance_time = time.time()
 
-    for i, desalinhamento in enumerate(os.listdir("mafaulda/{}".format(defeito))):
-        # para cada valor de desalinhamento
-        for j, velocidade in enumerate(os.listdir("mafaulda/{}/{}".format(defeito, desalinhamento))):
-            # para cada valor de velocidade de rotação
+    # para cada valor de desalinhamento
+    for i, desalinhamento in enumerate(os.listdir("mafaulda/" + defeito)):
+        # para cada valor de velocidade de rotação
+        for j, velocidade in enumerate(os.listdir("mafaulda/" + defeito + '/' + desalinhamento)):
+            
             # formatar e inserir os valores de desalinhamento e de velocidade
             if defeito == 'horizontal-misalignment':
                 data = {'defect_type': 'hor_mis',
@@ -57,7 +56,7 @@ for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
                                         defeito, desalinhamento, velocidade))
             data.update(features)
 
-            # exibe barra de status para o usuário
+            # exibe barra de status para o usuário (de acordo com o tipo de desalinhamento)
             if defeito == 'horizontal-misalignment':
                 print_status_bar((i+j/48)/4)
             elif defeito == 'vertical-misalignment':
@@ -75,10 +74,10 @@ df_desbalanceamento = pd.DataFrame(columns=['defect_type', 'imbalance', 'rot_vel
 print('\nCarregando desbalanceamento')
 instance_time = time.time()
 
+# para cada valor de desbalanceamento
 for i, desbalanceamento in enumerate(os.listdir("mafaulda/imbalance")):
-    # para cada valor de desbalanceamento
-    for j, velocidade in enumerate(os.listdir("mafaulda/imbalance/{}".format(desbalanceamento))):
-        # para cada valor de velocidade de rotação
+    # para cada valor de velocidade de rotação
+    for j, velocidade in enumerate(os.listdir("mafaulda/imbalance/" + desbalanceamento)):
         # formatar e inserir os valores de desbalanceamento e de velocidade
         data = {'defect_type': 'imbalance',
                 'imbalance': desbalanceamento[:-1],
@@ -102,8 +101,8 @@ df_normal = pd.DataFrame(columns=['defect_type',  'rot_vel'])
 print('\nCarregando condição normal')
 instance_time = time.time()
 
+# para cada valor de velocidade de rotação
 for i, velocidade in enumerate(os.listdir("mafaulda/normal")):
-    # para cada valor de velocidade de rotação
     # formatar e inserir os valores de desalinhamento e de velocidade
     data = {'defect_type': 'normal',
             'rot_vel': velocidade[:-4]}
