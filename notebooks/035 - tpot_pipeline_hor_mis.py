@@ -7,10 +7,10 @@ from sklearn.preprocessing import PolynomialFeatures
 from tpot.builtins import StackingEstimator
 
 # NOTE: Make sure that the outcome column is labeled 'target' in the data file
-tpot_data = pd.read_csv('PATH/TO/DATA/FILE', sep='COLUMN_SEPARATOR', dtype=np.float64)
-features = tpot_data.drop('target', axis=1)
+tpot_data = pd.read_csv('data.csv')
+features = tpot_data.drop(['hor_mis', 'ver_mis', 'imbalance', 'defect_type', 'rot_vel'], axis=1)
 training_features, testing_features, training_target, testing_target = \
-            train_test_split(features, tpot_data['target'], random_state=None)
+            train_test_split(features, tpot_data['hor_mis'].fillna(0), random_state=None)
 
 # Average CV score on the training set was: -0.009330433709391846
 exported_pipeline = make_pipeline(
@@ -21,3 +21,4 @@ exported_pipeline = make_pipeline(
 
 exported_pipeline.fit(training_features, training_target)
 results = exported_pipeline.predict(testing_features)
+print(results)
