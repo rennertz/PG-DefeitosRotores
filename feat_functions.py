@@ -16,8 +16,8 @@ def extract_features(file_adress):
     # poupa para a leitura apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão em 'skip'
     skip = [i for i in range(0, 250000) if i % ratio]
     signals = pd.read_csv(file_adress, header=None,
-                          names=['tachometer', 'ac1rad', 'ac1ax', 'ac1tg',
-                                 'ac2rad', 'ac2ax', 'ac2tg', 'microphone'],
+                          names=['tacômetro', 'ac1rad', 'ac1ax', 'ac1tg',
+                                 'ac2rad', 'ac2ax', 'ac2tg', 'microfone'],
                           skiprows=skip)
 
     # produz a transformada de Fourrier para cada sinal real. 
@@ -48,10 +48,10 @@ def extract_fundamental(fft_df):
 
     candidates = [0, 0, 0]
     for i in range(3):
-        index = fft_df['tachometer'].argmax()
+        index = fft_df['tacômetro'].argmax()
         candidates[i] = fft_df.freq_ax[index]
         for j in range(-2, 3):
-            fft_df.tachometer[index+j] = 0
+            fft_df['tacômetro'][index+j] = 0
 
     return min(candidates)
 
@@ -61,18 +61,14 @@ def extract_n_harmonics(fft_df, fund_index, n_harmonics=3):
     fft_df = fft_df.copy()
 
     # extrai todos os valores nos n primeiros harmônicos, exceto para o tacômetro e freq_ax
-    fft_df.pop('tachometer')
+    fft_df.pop('tacômetro')
     fft_df.pop('freq_ax')
 
     harmonic_features = {}
     idx = fund_index[0]
-    for i in range(n_harmonics+1):
+    for i in range(1,n_harmonics+1):
         # resgata no DataFrame os valores na harmonica i
-        if i:
-            harm_values = fft_df.iloc[idx*i-10:idx*i+11].max()
-        else:
-            harm_values = fft_df.iloc[0]
-        harm_values = harm_values.to_dict()
+        harm_values = fft_df.iloc[idx*i-25:idx*i+26].max()
         
         # adiciona às features com o respectivo sulfixo do harmonico i
         harmonic_features.update({k+'_{}h'.format(i): v for k, v in harm_values.items()})
@@ -85,7 +81,7 @@ def extract_time_statistics(time_df):
     time_df = time_df.copy()
 
     # extrai entropia, média e curtose para os sinais, exceto para o tacômetro
-    time_df.pop('tachometer')
+    time_df.pop('tacômetro')
 
     step = 0.2
     bin_range = np.arange(-10, 10+step, step)
