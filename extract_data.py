@@ -18,7 +18,7 @@ import sys  # para imprimir status de importação
 import time  # permite marcar o tempo de execução
 start_time = time.time()
 
-
+# define barra de status a ser mostrada ao usuário
 def print_status_bar(status):
     sys.stdout.write('\r')
     sys.stdout.write('    [{:20}] {:.3f}%'.format(
@@ -26,7 +26,7 @@ def print_status_bar(status):
     sys.stdout.flush()
 
 
-# Extraindo defeitos de desalinhamento
+# extrai defeitos de desalinhamento
 df_desalinhamento = pd.DataFrame(columns=['defect_type', 'hor_mis', 'ver_mis', 'rot_vel'])
 # códigos para desalinhamento horizontal e vertical foram reunidos para evitra repetição
 for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
@@ -38,7 +38,7 @@ for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
         # para cada valor de velocidade de rotação
         for j, velocidade in enumerate(os.listdir("mafaulda/" + defeito + '/' + desalinhamento)):
             
-            # formatar e inserir os valores de desalinhamento e de velocidade
+            # formata e insere os valores de desalinhamento e de velocidade
             if defeito == 'horizontal-misalignment':
                 data = {'defect_type': 'hor_mis',
                         'hor_mis': desalinhamento[:-2],
@@ -51,9 +51,8 @@ for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
                         'ver_mis': desalinhamento[:-2],
                         'rot_vel': velocidade[:-4]}
 
-            # fase de extração de características (toma muito tempo!)
-            features = extract_features("mafaulda/{}/{}/{}".format(
-                                        defeito, desalinhamento, velocidade))
+            # extrai características (toma muito tempo!)
+            features = extract_features("mafaulda/{}/{}/{}".format(defeito, desalinhamento, velocidade))
             data.update(features)
 
             # exibe barra de status para o usuário (de acordo com o tipo de desalinhamento)
@@ -62,14 +61,15 @@ for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
             elif defeito == 'vertical-misalignment':
                 print_status_bar((i+j/49)/6)
 
-            # finalmente, adiciona o novo dado ao dataframe correspondente
+            # adiciona o novo dado ao dataframe correspondente
             df_desalinhamento = df_desalinhamento.append(data, ignore_index=True)
 
     print('\n    Execução em {:.3f} segundos'.format(
           time.time()-instance_time))
 
 
-# Extraindo defeitos de desbalanceamento
+
+# extrai defeitos de desbalanceamento
 df_desbalanceamento = pd.DataFrame(columns=['defect_type', 'imbalance', 'rot_vel'])
 print('\nCarregando desbalanceamento')
 instance_time = time.time()
@@ -78,46 +78,46 @@ instance_time = time.time()
 for i, desbalanceamento in enumerate(os.listdir("mafaulda/imbalance")):
     # para cada valor de velocidade de rotação
     for j, velocidade in enumerate(os.listdir("mafaulda/imbalance/" + desbalanceamento)):
-        # formatar e inserir os valores de desbalanceamento e de velocidade
+        # formata e insere os valores de desbalanceamento e de velocidade
         data = {'defect_type': 'imbalance',
                 'imbalance': desbalanceamento[:-1],
                 'rot_vel': velocidade[:-4]}
 
-        # fase de extração de características (toma muito tempo!)
-        features = extract_features("mafaulda/imbalance/{}/{}".format(
-                                    desbalanceamento, velocidade))
+        # extrai características (toma muito tempo!)
+        features = extract_features("mafaulda/imbalance/{}/{}".format(desbalanceamento, velocidade))
         data.update(features)
 
         # exibe barra de status para o usuário
         print_status_bar((i+j/48)/7)
 
-        # finalmente, adiciona o novo dado ao dataframe correspondente
+        # adiciona o novo dado ao dataframe correspondente
         df_desbalanceamento = df_desbalanceamento.append(data, ignore_index=True)
 print('\n    Execução em {:.3f} segundos'.format(time.time()-instance_time))
 
 
-# Extraindo rotações para funcionamento normal
+
+# extrai dados para funcionamento normal
 df_normal = pd.DataFrame(columns=['defect_type',  'rot_vel'])
 print('\nCarregando condição normal')
 instance_time = time.time()
 
 # para cada valor de velocidade de rotação
 for i, velocidade in enumerate(os.listdir("mafaulda/normal")):
-    # formatar e inserir os valores de desalinhamento e de velocidade
+    # formata e insere os valores de desalinhamento e de velocidade
     data = {'defect_type': 'normal',
             'rot_vel': velocidade[:-4]}
 
-    # fase de extração de características (toma muito tempo!)
+    # extrai características (toma muito tempo!)
     features = extract_features("mafaulda/normal/{}".format(velocidade))
     data.update(features)
 
     # exibe barra de status para o usuário
     print_status_bar(i/48)
 
-    # finalmente, adiciona o novo dado ao dataframe correspondente
+    # adiciona o novo dado ao dataframe correspondente
     df_normal = df_normal.append(data, ignore_index=True)
-
 print('\n    Execução em {:.3f} segundos\n'.format(time.time()-instance_time))
+
 
 
 # Junta todos os DF de todos os defeitos e exibe o resumo
@@ -129,6 +129,7 @@ f = open("data.csv", "w")
 df_all.to_csv(f, line_terminator='\n', index=False)
 f.close()
 
+# Exibe o tempo total de execução ao usuário
 total_duration = time.time()-start_time
 print('\nExecução total em {} minutos e {:.3f} segundos'.format(
       int(total_duration//60), total_duration % 60))

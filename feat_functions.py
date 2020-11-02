@@ -57,17 +57,14 @@ def extract_fundamental(fft_df):
 
 
 def extract_n_harmonics(fft_df, fund_index, n_harmonics=3):
-    #protege o DataFrame original de alterações
-    fft_df = fft_df.copy()
-
     # extrai todos os valores nos n primeiros harmônicos, exceto para o tacômetro e freq_ax
-    fft_df.pop('tacômetro')
-    fft_df.pop('freq_ax')
+    fft_df = fft_df.drop(['tacômetro', 'freq_ax'], axis=1)
 
     harmonic_features = {}
     idx = fund_index[0]
-    for i in range(1,n_harmonics+1):
-        # resgata no DataFrame os valores na harmonica i
+    for i in range(1, n_harmonics+1):
+        # resgata na frequência os valores na harmonica i
+        # a partir do maior valor encontrado em um intervalo de +/- 5 Hz em torno da posição i*fundamental
         harm_values = fft_df.iloc[idx*i-25:idx*i+26].max()
         
         # adiciona às features com o respectivo sulfixo do harmonico i
@@ -77,12 +74,10 @@ def extract_n_harmonics(fft_df, fund_index, n_harmonics=3):
 
 
 def extract_time_statistics(time_df):
-    #protege o DataFrame original de alterações
-    time_df = time_df.copy()
-
     # extrai entropia, média e curtose para os sinais, exceto para o tacômetro
-    time_df.pop('tacômetro')
+    time_df = time_df.drop('tacômetro', axis=1)
 
+    # entropia
     step = 0.2
     bin_range = np.arange(-10, 10+step, step)
     entropias = {}
@@ -92,15 +87,22 @@ def extract_time_statistics(time_df):
 
     entropias = {k+'_entropy':v for k,v in entropias.items()}
 
+    # média
     medias = time_df.mean().to_dict()
     medias = {k+'_mean': v for k,v in medias.items()}
 
+    # curtose
     curtoses = time_df.kurtosis().to_dict()
     curtoses = {k+'_kurt':v for k, v in curtoses.items()}
+
+    # RMS
+    rms = time_df.pow(2).sum().pow(1/2).to_dict()
+    rms = {k+'_rms':v for k, v in rms.items()}
 
     # reúne todos os valores
     time_statistics = entropias
     time_statistics.update(medias)
     time_statistics.update(curtoses)
+    time_statistics.update(rms)
 
     return time_statistics
