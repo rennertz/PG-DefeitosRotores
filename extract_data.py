@@ -102,7 +102,7 @@ print('\n    Execução em {:.3f} segundos\n'.format(time.time()-instance_time))
 df.info()
 
 # (sobre-)escreve um cvs com todos os dados
-f = open("data2.csv", "w")
+f = open("data.csv", "w")
 df.to_csv(f, line_terminator='\n', index=False)
 f.close()
 print('Dados salvos em: data2.csv')
