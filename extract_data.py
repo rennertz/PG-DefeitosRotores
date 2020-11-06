@@ -26,108 +26,86 @@ def print_status_bar(status):
     sys.stdout.flush()
 
 
-# extrai defeitos de desalinhamento
-df_desalinhamento = pd.DataFrame(columns=['defect_type', 'hor_mis', 'ver_mis', 'rot_vel'])
-# códigos para desalinhamento horizontal e vertical foram reunidos para evitra repetição
-for defeito in ['horizontal-misalignment', 'vertical-misalignment']:
-    print('\nCarregando desalinhamento', defeito.split('-')[0])
+# instancia o DataFrame com as primeiras colunas
+df = pd.DataFrame(columns=['defeito', 'severidade', 'rotacao', 'fundamental'])
+
+# abre a pasta de cada defeito
+for fault in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance']:
+    print('\nCarregando', fault)
     instance_time = time.time()
 
-    # para cada valor de desalinhamento
-    for i, desalinhamento in enumerate(os.listdir("mafaulda/" + defeito)):
-        # para cada valor de velocidade de rotação
-        for j, velocidade in enumerate(os.listdir("mafaulda/" + defeito + '/' + desalinhamento)):
+    # abre a subpasta de cada severidade do defeito
+    for i, severity in enumerate(os.listdir("mafaulda/" + fault)):
+
+        # abre cada arquivo, cujo nome indica a velocidade de rotação
+        for j, rotation in enumerate(os.listdir("mafaulda/" + fault + '/' + severity)):
             
-            # formata e insere os valores de desalinhamento e de velocidade
-            if defeito == 'horizontal-misalignment':
-                data = {'defect_type': 'hor_mis',
-                        'hor_mis': desalinhamento[:-2],
-                        'ver_mis': np.NaN,
-                        'rot_vel': velocidade[:-4]}
+            # identifica o tipo de defeito e assigna sua severidade 
+            # além disso, exibe barra de status para o usuário (de acordo com o tipo de falha)
+            if fault == 'horizontal-misalignment':
+                data = {'defeito': 'desalinhamento_horizontal',
+                        'severidade': float(severity[:-2]) }
 
-            elif defeito == 'vertical-misalignment':
-                data = {'defect_type': 'ver_mis',
-                        'hor_mis': np.NaN,
-                        'ver_mis': desalinhamento[:-2],
-                        'rot_vel': velocidade[:-4]}
-
-            # extrai características (toma muito tempo!)
-            features = extract_features("mafaulda/{}/{}/{}".format(defeito, desalinhamento, velocidade))
-            data.update(features)
-
-            # exibe barra de status para o usuário (de acordo com o tipo de desalinhamento)
-            if defeito == 'horizontal-misalignment':
                 print_status_bar((i+j/48)/4)
-            elif defeito == 'vertical-misalignment':
+
+            elif fault == 'vertical-misalignment':
+                data = {'defeito': 'desalinhamento_vertical',
+                        'severidade': float(severity[:-2]) }
+
                 print_status_bar((i+j/49)/6)
 
-            # adiciona o novo dado ao dataframe correspondente
-            df_desalinhamento = df_desalinhamento.append(data, ignore_index=True)
+            elif fault == 'imbalance':
+                data = {'defeito': 'desbalanceamento',
+                        'severidade': float(severity[:-1]) }
+
+                print_status_bar((i+j/48)/7)
+
+            # recupera o nome do arquivo como rotaçao
+            data.update({'rotacao': float(rotation[:-4]) })
+
+            # extrai características (toma muito tempo!)
+            features = extract_features("mafaulda/{}/{}/{}".format(fault, severity, rotation))
+            data.update(features)
+
+            # adiciona o novo dado ao dataframe
+            df = df.append(data, ignore_index=True)
 
     print('\n    Execução em {:.3f} segundos'.format(
           time.time()-instance_time))
 
 
 
-# extrai defeitos de desbalanceamento
-df_desbalanceamento = pd.DataFrame(columns=['defect_type', 'imbalance', 'rot_vel'])
-print('\nCarregando desbalanceamento')
-instance_time = time.time()
-
-# para cada valor de desbalanceamento
-for i, desbalanceamento in enumerate(os.listdir("mafaulda/imbalance")):
-    # para cada valor de velocidade de rotação
-    for j, velocidade in enumerate(os.listdir("mafaulda/imbalance/" + desbalanceamento)):
-        # formata e insere os valores de desbalanceamento e de velocidade
-        data = {'defect_type': 'imbalance',
-                'imbalance': desbalanceamento[:-1],
-                'rot_vel': velocidade[:-4]}
-
-        # extrai características (toma muito tempo!)
-        features = extract_features("mafaulda/imbalance/{}/{}".format(desbalanceamento, velocidade))
-        data.update(features)
-
-        # exibe barra de status para o usuário
-        print_status_bar((i+j/48)/7)
-
-        # adiciona o novo dado ao dataframe correspondente
-        df_desbalanceamento = df_desbalanceamento.append(data, ignore_index=True)
-print('\n    Execução em {:.3f} segundos'.format(time.time()-instance_time))
-
-
-
-# extrai dados para funcionamento normal
-df_normal = pd.DataFrame(columns=['defect_type',  'rot_vel'])
 print('\nCarregando condição normal')
 instance_time = time.time()
 
-# para cada valor de velocidade de rotação
-for i, velocidade in enumerate(os.listdir("mafaulda/normal")):
-    # formata e insere os valores de desalinhamento e de velocidade
-    data = {'defect_type': 'normal',
-            'rot_vel': velocidade[:-4]}
+# abre a pasta de condição normal e abre cada arquivo
+for i, rotation in enumerate(os.listdir("mafaulda/normal")):
+
+    # identifica a condição normal e recupera o nome do arquivo como rotaçao
+    data = {'defeito': 'normal',
+            'severidade': 0,
+            'rotacao': float(rotation[:-4]) }
 
     # extrai características (toma muito tempo!)
-    features = extract_features("mafaulda/normal/{}".format(velocidade))
+    features = extract_features("mafaulda/normal/" + rotation)
     data.update(features)
 
     # exibe barra de status para o usuário
     print_status_bar(i/48)
 
-    # adiciona o novo dado ao dataframe correspondente
-    df_normal = df_normal.append(data, ignore_index=True)
+    # adiciona o novo dado ao dataframe
+    df = df.append(data, ignore_index=True)
 print('\n    Execução em {:.3f} segundos\n'.format(time.time()-instance_time))
 
 
-
-# Junta todos os DF de todos os defeitos e exibe o resumo
-df_all = pd.concat([df_normal, df_desalinhamento, df_desbalanceamento])
-df_all.info()
+# Exibe o resumo dos dados
+df.info()
 
 # (sobre-)escreve um cvs com todos os dados
-f = open("data.csv", "w")
-df_all.to_csv(f, line_terminator='\n', index=False)
+f = open("data2.csv", "w")
+df.to_csv(f, line_terminator='\n', index=False)
 f.close()
+print('Dados salvos em: data2.csv')
 
 # Exibe o tempo total de execução ao usuário
 total_duration = time.time()-start_time

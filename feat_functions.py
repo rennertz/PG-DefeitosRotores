@@ -85,7 +85,7 @@ def extract_time_statistics(time_df):
         out = pd.cut(time_df[col], bins = bin_range, include_lowest=True, right=False, retbins=True)[0]
         entropias[col] = stats.entropy(out.value_counts())
 
-    entropias = {k+'_entropy':v for k,v in entropias.items()}
+    entropias = {k+'_entr':v for k,v in entropias.items()}
 
     # média
     medias = time_df.mean().to_dict()
