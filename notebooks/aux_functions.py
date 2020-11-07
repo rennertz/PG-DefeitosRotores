@@ -27,33 +27,38 @@ def gera_corr_df(defect_name, df_original, df_normalized, feat_to_eixo, feat_to_
     # recupera nome das features como valores, não como index
     corr.reset_index(inplace=True)
     corr = corr.rename(columns = {'index':'feature'})
-    # classifica por eixo
+    # atribui eixo
     corr['eixo'] = corr['feature'].map(feat_to_eixo)
-    # classifica por categoria
+    # atribui categoria
     corr['categoria'] = corr['feature'].map(feat_to_type)
     # guarda sinal da correlação e torna todas positivas
     corr['positiva'] = corr['correlacao'].apply(lambda x: x>0)
     corr['correlacao'] = corr['correlacao'].abs()
     # classifica como desejado
     corr['normalizado'] = ~corr['normalizado']
-    corr = corr.sort_values(ascending=False, by=['categoria', 'normalizado','correlacao'])
+    corr = corr.sort_values(ascending=False, by=['eixo', 'normalizado', 'correlacao'])
     corr['normalizado'] = ~corr['normalizado']
 
     return corr
 
 def plot_correlations(corr):
     # gera plot 1
-    sns.catplot(y='feature', x='correlacao', data=corr,
-                kind='bar', orient='h', height=12, aspect=0.4,
-                col='normalizado', hue='categoria', dodge=False, ci=None)
-    plt.suptitle('Correlação comparada globalmente')
+    fig, axs = plt.subplots(1, 4, figsize=(16,6), sharex=True)
+    for i, eixo in enumerate(['radial', 'tangente', 'axial', 'microfone']):
+        sns.barplot(y='feature', x='correlacao', data=corr.query('normalizado == False and eixo == "{}" '.format(eixo)),
+                    orient='h', ax=axs[i], palette="viridis")
+        axs[i].set_title('eixo ' + eixo)
+    plt.suptitle('Correlação em cada eixo')
     plt.tight_layout()
 
     # gera plot 2
-    sns.catplot(y='feature', x='correlacao', data=corr, 
-                kind='bar', orient='h', height=4, aspect=0.5,
-                hue='normalizado', sharey=False, col='categoria')
-    plt.suptitle('Ganho ao normalizar por categoria')
+    fig, axs = plt.subplots(1, 4, figsize=(16,6), sharex=True)
+    for i, eixo in enumerate(['radial', 'tangente', 'axial', 'microfone']):
+        sns.barplot(y='feature', x='correlacao', data=corr.query('eixo == "{}" '.format(eixo)), 
+                orient='h', ax=axs[i], hue='normalizado')
+        axs[i].set_title('eixo ' + eixo)
+
+    plt.suptitle('Ganho ao normalizar por eixo')
     plt.tight_layout()
 
 
@@ -86,6 +91,7 @@ def plot_change_correlation(defect_type, df_original, df_normalized, decrescente
     compare = compare.iloc[:cut]
     compare.pop('diff')
 
+    sns.axes_style("white")
     if ax is None:
         ax = plt.gca()
     
