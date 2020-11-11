@@ -16,8 +16,8 @@ def extract_features(file_adress):
     # poupa para a leitura apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão em 'skip'
     skip = [i for i in range(0, 250000) if i % ratio]
     signals = pd.read_csv(file_adress, header=None,
-                          names=['tacômetro', 'ac1rad', 'ac1ax', 'ac1tg',
-                                 'ac2rad', 'ac2ax', 'ac2tg', 'microfone'],
+                          names=['tacômetro', 'ax1', 'rad1', 'tg1',
+                                 'ax2', 'rad2', 'tg2', 'microfone'],
                           skiprows=skip)
 
     # produz a transformada de Fourrier para cada sinal real. 
