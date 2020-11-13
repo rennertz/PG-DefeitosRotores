@@ -143,12 +143,15 @@ def gera_df_resultados(test_data, feature_list, prediction, real):
         'rotacao_discreta': disc_rot,
     })
 
+    resultados = resultados.sort_values(['real', 'rotacao_discreta'])
+
     return resultados
 
 
-def gera_df_metricas(prediction, real, modelo=None):
+def gera_df_metricas(prediction, real, modelo=None, regressores=None):
     dados = {
         'modelo': [modelo],
+        'dados': [regressores],
         'R2':                      metrics.r2_score(real, prediction), 
         'MSE':           metrics.mean_squared_error(real, prediction),
         'RMSE': np.sqrt(metrics.mean_squared_error(real, prediction)),
