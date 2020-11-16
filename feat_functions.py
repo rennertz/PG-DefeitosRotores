@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import scipy.stats as stats
+from scipy import signal
+from scipy import integrate
 
 # TODO: extrair Entropia, Média, Curtose dos sete sinais (6 acc e microfone)
 
@@ -38,6 +40,7 @@ def extract_features(file_adress):
     features = {'fundamental': fundamental}
     features.update(extract_n_harmonics(signals_fft, index))
     features.update(extract_time_statistics(signals))
+    features.update(estract_vel_rms(signals, sampling_freq))
 
     return features
 
@@ -87,9 +90,9 @@ def extract_time_statistics(time_df):
 
     entropias = {k+'_entr':v for k,v in entropias.items()}
 
-    # média
-    medias = time_df.mean().to_dict()
-    medias = {k+'_mean': v for k,v in medias.items()}
+    # média    ## REMOVIDAS POR NÂO FAZEREM SENTIDO FÍSICO 
+    # medias = time_df.mean().to_dict()
+    # medias = {k+'_mean': v for k,v in medias.items()}
 
     # curtose
     curtoses = time_df.kurtosis().to_dict()
@@ -101,8 +104,31 @@ def extract_time_statistics(time_df):
 
     # reúne todos os valores
     time_statistics = entropias
-    time_statistics.update(medias)
+    # time_statistics.update(medias)
     time_statistics.update(curtoses)
     time_statistics.update(rms)
 
     return time_statistics
+
+
+def estract_vel_rms(time_df, sampl_freq):
+    # transforna-se o sinal de m/s² para mm/s²
+    acc_mmps2 = time_df.drop(['tacômetro', 'microfone'], axis=1) *1000
+
+    # instancia o filtro passa alta arbitrário em 10 Hz 
+    sos = signal.butter(6, 10, 'highpass', fs=sampl_freq, output='sos')
+
+    # calcula velocidade pela integral (trapezoidal) dos sinais
+    velocity_filtered = pd.DataFrame()
+    dt = 1/sampl_freq
+    for col in acc_mmps2.columns:
+        velocity_filtered[col] = integrate.cumtrapz(y=np.array(acc_mmps2[col]), dx=dt, initial=0)
+        velocity_filtered[col] = signal.sosfilt(sos, velocity_filtered[col])
+
+    vel_rms = velocity_filtered.apply(rms).to_dict()
+
+    return {k+'_vel_rms':v for k, v in vel_rms.items()}
+
+
+def rms(x):
+    return np.sqrt(x.dot(x)/x.size)
