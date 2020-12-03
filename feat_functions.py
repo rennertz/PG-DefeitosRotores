@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 import scipy.stats as stats
 from scipy import signal
@@ -90,6 +90,8 @@ def extract_phase_angles(fft_df, fund_index):
     angle.pop('tacometro')
     # recupera ângulo para o intervalo -180 a 180 graus
     angle = (angle + 180) % 360 - 180
+    # ignora o sinal do ângulo de fase
+    angle = np.abs(angle)
 
     # retorna features com o respectivo sulfixo
     return {k+'_phase': v for k, v in angle.items()}
