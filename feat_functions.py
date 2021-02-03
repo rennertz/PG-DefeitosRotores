@@ -6,21 +6,22 @@ import scipy.stats as stats
 from scipy import signal
 from scipy import integrate
 
-# TODO: extrair Entropia, Média, Curtose dos sete sinais (6 acc e microfone)
 
 
 def extract_features(file_adress):
     # reduz a frequência da aquisição 'ratio' vezes, tomando apenas 1 a cada 'ratio' amostras temporais
-    # note: 50 kHz é a frequência de aquisição original dos dados! 
     ratio = 50
+    # Nova frequência de aquisição. Note: 50 kHz é a frequência de aquisição original dos dados! 
     sampling_freq = 50000/ratio
 
     # poupa para a leitura apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão em 'skip'
     skip = [i for i in range(0, 250000) if i % ratio]
-    signals = pd.read_csv(file_adress, header=None,
-                          names=['tacometro', 'ax1', 'rad1', 'tg1',
-                                 'ax2', 'rad2', 'tg2', 'microfone'],
-                          skiprows=skip)
+    signals = pd.read_csv(
+        file_adress, 
+        header=None,
+        names=['tacometro', 'ax1', 'rad1', 'tg1','ax2', 'rad2', 'tg2', 'microfone'],
+        skiprows=skip,
+    )
 
     # produz a transformada de Fourrier para cada sinal real. 
     # a rfft representa apenas a metade relevante da transformada. Sinais reais produzem transformadas simétricas
@@ -30,7 +31,7 @@ def extract_features(file_adress):
 
     # gera o eixo da frequência, dado que a frequência de Nyquist é sampling_freq/2
     fft_amplitude['freq_ax'] = np.linspace(0, sampling_freq/2+1, 
-    									 fft_amplitude.shape[0])
+                                           fft_amplitude.shape[0])
 
     # gera as features, começando pela fundamental
     fundamental = extract_fundamental(fft_amplitude)
@@ -60,9 +61,9 @@ def extract_fundamental(fft_df):
     return min(candidates)
 
 
-def extract_n_harmonics(fft_df, fund_index, n_harmonics=3):
+def extract_n_harmonics(fft_df, fund_index, n_harmonics=5):
     # extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax
-    fft_df = fft_df.drop(['tacometro', 'freq_ax'], axis=1)
+    fft_df = fft_df.drop(['tacometro', 'freq_ax', 'microfone'], axis=1)
 
     harmonic_features = {}
     idx = fund_index[0]
@@ -75,6 +76,7 @@ def extract_n_harmonics(fft_df, fund_index, n_harmonics=3):
         harmonic_features.update({k+'_{}h'.format(i): v for k, v in harm_values.items()})
 
     return harmonic_features
+
 
 def extract_phase_angles(fft_df, fund_index):
     # extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax
@@ -101,31 +103,25 @@ def extract_time_statistics(time_df):
     # extrai entropia, média e curtose para os sinais, exceto para o tacometro
     time_df = time_df.drop('tacometro', axis=1)
 
-    # entropia
-    step = 0.2
-    bin_range = np.arange(-10, 10+step, step)
-    entropias = {}
-    for i, col in enumerate(time_df.columns.values[:]):
-        out = pd.cut(time_df[col], bins = bin_range, include_lowest=True, right=False, retbins=True)[0]
-        entropias[col] = stats.entropy(out.value_counts())
-
-    entropias = {k+'_entr':v for k,v in entropias.items()}
-
     # média    ## REMOVIDAS POR NÂO FAZEREM SENTIDO FÍSICO 
     # medias = time_df.mean().to_dict()
     # medias = {k+'_mean': v for k,v in medias.items()}
 
     # curtose
     curtoses = time_df.kurtosis().to_dict()
-    curtoses = {k+'_kurt':v for k, v in curtoses.items()}
+    curtoses = {k+'_kurt':v for k, v in curtoses.items()} 
+    
+    # entropia
+    entropias = calc_entropy(time_df)
+    entropias = {k+'_entr':v for k,v in entropias.items()}
 
     # RMS
     rms = time_df.pow(2).sum().pow(1/2).to_dict()
     rms = {k+'_rms':v for k, v in rms.items()}
 
     # reúne todos os valores
-    time_statistics = entropias
     # time_statistics.update(medias)
+    time_statistics = entropias
     time_statistics.update(curtoses)
     time_statistics.update(rms)
 
@@ -149,6 +145,18 @@ def estract_vel_rms(time_df, sampl_freq):
     vel_rms = velocity_filtered.apply(rms).to_dict()
 
     return {k+'_vel_rms':v for k, v in vel_rms.items()}
+
+
+def calc_entropy(dataframe):
+    entropias = {}
+    
+    for col in dataframe.columns.values[:]:
+        # divide cada sinal em 100 faixas e faz a contagem para cada faixa
+        out = np.histogram(dataframe[col], bins=100)[0]
+        # calcula a entropia de shannon
+        entropias[col] = stats.entropy(out)
+        
+    return entropias
 
 
 def rms(x):

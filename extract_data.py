@@ -60,6 +60,7 @@ for fault in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance']:
 
                 print_status_bar((i+j/48)/7)
 
+            
             # recupera o nome do arquivo como rotaçao
             data.update({'rotacao': float(rotation[:-4]) })
 
@@ -69,6 +70,7 @@ for fault in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance']:
 
             # adiciona o novo dado ao dataframe
             df = df.append(data, ignore_index=True)
+    
 
     print('\n    Execução em {:.3f} segundos'.format(
           time.time()-instance_time))
@@ -85,6 +87,7 @@ for i, rotation in enumerate(os.listdir("mafaulda/normal")):
     data = {'defeito': 'normal',
             'severidade': 0,
             'rotacao': float(rotation[:-4]) }
+    
 
     # extrai características (toma muito tempo!)
     features = extract_features("mafaulda/normal/" + rotation)
@@ -95,17 +98,21 @@ for i, rotation in enumerate(os.listdir("mafaulda/normal")):
 
     # adiciona o novo dado ao dataframe
     df = df.append(data, ignore_index=True)
+    
+
 print('\n    Execução em {:.3f} segundos\n'.format(time.time()-instance_time))
 
 
 # Exibe o resumo dos dados
 df.info()
 
+
 # (sobre-)escreve um cvs com todos os dados
 f = open("data.csv", "w")
 df.to_csv(f, line_terminator='\n', index=False)
 f.close()
-print('Dados salvos em: data2.csv')
+print('Dados salvos em: data.csv')
+
 
 # Exibe o tempo total de execução ao usuário
 total_duration = time.time()-start_time
