@@ -1,6 +1,6 @@
 # PG-DefeitosRotores
 
-Este é um projeto de Graduação em Engenharia Mecânica na UFES, ano 20201.
+Este é um projeto de Graduação em Engenharia Mecânica na UFES, ano 2021.
 
 Aqui você encontra os módulos python para o trabalho da base de dados, o dataset gerado e minhas análises em notebook jupyter no [**nbviwer do projeto**](homepage.ipynb). O texto final será disopnibilizado assim que for entregue e aprovado pela banca de conclusão de curso.
 
