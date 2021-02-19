@@ -24,4 +24,9 @@ Note que a base MaFaulda não está presente no repositório. Ela deve ser baixa
 
 ![Exemplo de carregamento](https://media.giphy.com/media/qreDqbIdpIINndTqZ2/giphy.gif)
 
-Para verificar as características estraídas, acesse [feat_functions.py](feat_functions.py)
+Para verificar as características extraídas, acesse [feat_functions.py](feat_functions.py)
+
+## Visualizações
+
+* [Sinais de vibração](data_visualizations/010-signals_data_exploration.ipynb)
+
