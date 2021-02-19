@@ -2,7 +2,7 @@
 
 Este é um projeto de Graduação em Engenharia Mecânica na UFES, ano 2020.
 
-Aqui você encontra os módulos python para o trabalho da base de dados, o dataset gerado e minhas análises (*em construção*). O texto final será disopnibilizado assim que for entregue e aprovado pela banca.
+Aqui você encontra os módulos python para o trabalho da base de dados, o dataset gerado e minhas análises em notebook jupyter no [**nbviwer do projeto**](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/homepage.ipynb). O texto final será disopnibilizado assim que for entregue e aprovado pela banca de conclusão de curso.
 
 ## Objetivo
 
