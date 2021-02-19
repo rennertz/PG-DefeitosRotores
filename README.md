@@ -28,5 +28,5 @@ Para verificar as características extraídas, acesse [feat_functions.py](feat_f
 
 ## Visualizações
 
-* [Sinais de vibração](data_visualizations/010-signals_data_exploration.ipynb)
+* [Sinais de vibração](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/data_visualizations/010-signals_data_exploration.ipynb)
 
