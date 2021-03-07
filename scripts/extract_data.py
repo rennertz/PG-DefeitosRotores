@@ -108,7 +108,7 @@ df.info()
 
 
 # (sobre-)escreve um cvs com todos os dados
-f = open("data.csv", "w")
+f = open("../data.csv", "w")
 df.to_csv(f, line_terminator='\n', index=False)
 f.close()
 print('Dados salvos em: data.csv')

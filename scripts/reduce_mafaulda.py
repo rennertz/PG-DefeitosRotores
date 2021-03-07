@@ -72,7 +72,7 @@ def save_file(file_path, df):
 
 # cria estrutura de pastas que receberá os novos arquivos
 for folder in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance']:
-    Path("mafaulda_reduced/"+folder).mkdir(parents=True, exist_ok=True)
+    Path("../mafaulda_reduced/"+folder).mkdir(parents=True, exist_ok=True)
 
 
 # abre a pasta de cada defeito
@@ -115,8 +115,8 @@ for fault in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance']:
 
 
         print(' ')
-        save_file('mafaulda_reduced/{}/{}.csv'.format(fault, severity), df_time)
-        save_file('mafaulda_reduced/{}/{}_fft.csv'.format(fault, severity), df_freq)
+        save_file('../mafaulda_reduced/{}/{}.csv'.format(fault, severity), df_time)
+        save_file('../mafaulda_reduced/{}/{}_fft.csv'.format(fault, severity), df_freq)
         print('\n')
 
 
@@ -152,8 +152,8 @@ for i, rotation in enumerate(os.listdir("mafaulda/normal")):
     df_freq = df_freq.append(signals_fft, ignore_index=True)
 
 print(' ')
-save_file('mafaulda_reduced/normal.csv'.format(fault, severity), df_time)
-save_file('mafaulda_reduced/normal_fft.csv'.format(fault, severity), df_freq)
+save_file('../mafaulda_reduced/normal.csv'.format(fault, severity), df_time)
+save_file('../mafaulda_reduced/normal_fft.csv'.format(fault, severity), df_freq)
 print('\n')
 
 print('\n    Execução em {:.3f} segundos\n'.format(time.time()-instance_time))
