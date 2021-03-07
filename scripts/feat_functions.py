@@ -84,14 +84,17 @@ def extract_phase_angles(fft_df, fund_index):
     
     # resgata FFT na fundamental para cada eixo
     fft_df = fft_df.iloc[fund_index].squeeze()
+    
     # calcula o angulo de fase 
     angle = fft_df.apply(np.angle, deg=True)
 
     # subtrai o ângulo de fase de cada eixo em relação ao do tacômetro antes de descarta-lo
     angle = angle - angle['tacometro']
     angle.pop('tacometro')
+    
     # recupera ângulo para o intervalo -180 a 180 graus
     angle = (angle + 180) % 360 - 180
+    
     # ignora o sinal do ângulo de fase
     angle = np.abs(angle)
 
