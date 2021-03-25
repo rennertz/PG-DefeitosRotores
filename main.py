@@ -1,16 +1,15 @@
 import time
-from utilities import extract, compress
+from utilities.processes import iterate_and_compress, iterate_and_extract
 
 # inicia a cronometragem
 start_time = time.time()
 
+# extrai características, salva data.csv e exibe o resumo
+iterate_and_extract()
 
-# extrai dados e exibe o resumo
-extract.iterate_and_extract()
-
+# opcional para gerar plot waterfall 
 # gera uma cópia resumida da MAFAULDA
-compress.iterate_and_compress()
-
+# iterate_and_compress()
 
 # exibe o tempo de execução total ao usuário
 total_duration = time.time()-start_time

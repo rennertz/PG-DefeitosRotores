@@ -1,30 +1,10 @@
-import sys
-import shutil
-from pathlib import Path
-import os
 import pandas as pd
 import numpy as np
 
-# realiza a leitura dos sinais reduzindo a frequência da aquisição 'ratio' vezes, 
-# tomando apenas 1 a cada 'ratio' amostras temporais
-RATIO = 50
 
-
-def configure_normal_path():
-    '''configura a pasta normal para sua correta digestão'''
-
-    source_dir = "mafaulda/normal"
-    file_names = os.listdir(source_dir)
-
-    target_dir = "mafaulda/normal/0"
-    Path(target_dir).mkdir(parents=True, exist_ok=True)
-
-    for file_name in file_names:
-        shutil.move(os.path.join(source_dir, file_name), target_dir)
-
-
-def read_compressed_csv(file_path, ratio = RATIO):
-    '''Lê o arquivo, poupando as linhas múltiplas de "ratio"''' 
+def read_compressed_csv(file_path, ratio = 50):
+    '''Realiza a leitura dos sinais reduzindo a frequência da aquisição 'ratio' vezes, 
+    tomando apenas 1 a cada 'ratio' amostras temporais'''
     
     # lista as linhas para exclusão em 'skip'
     skip = [i for i in range(0, 250000) if i % ratio]
@@ -39,27 +19,36 @@ def read_compressed_csv(file_path, ratio = RATIO):
     return signals
 
 
-def generate_fft(signals, ratio = RATIO):
-    # Nova frequência de aquisição. Note: 50 kHz é a frequência de aquisição original dos dados! 
+def generate_fft(signals, ratio = 50):
+    '''Gera o dataframe com a transformada rápida de fourrier 
+    a partir do dataframe dos sinais no tempo'''
+
+    # define nova frequência de aquisição. 
     sampling_freq = 50000/ratio
+    # note: 50 kHz é a frequência de aquisição original dos dados 
 
     # produz a transformada de Fourrier para cada sinal real. 
-    # a rfft representa apenas a metade relevante da transformada. Sinais reais produzem transformadas simétricas
     signals_fft = signals.apply(np.fft.rfft, axis=0, norm="ortho")
+    # note: a rfft apresenta apenas a metade relevante da transformada, 
+    # pois sinais reais produzem transformadas simétricas
 
     # gera o eixo da frequência, dado que a frequência de Nyquist é sampling_freq/2
     signals_fft['freq_ax'] = np.linspace(0, sampling_freq/2, 
                                            signals_fft.shape[0])
                                            
-    # obtém valor absoluto a partir dos complexos
+    # obtém valor absoluto a partir da transformada complexa
     fft_amplitude = signals_fft.apply(np.abs)
 
     return signals_fft, fft_amplitude
 
 
-def print_status_bar(status):
-    '''define e exibe barra de status ao usuário'''
-    sys.stdout.write('\r')
-    sys.stdout.write('    [{:20}] {:.3f}%'.format(
-                     round(status*20)*'=', 100*status))
-    sys.stdout.flush()
+def save_file(file_path, df, truncate=False):
+    '''(sobre-)Escreve um cvs com todos os dados'''
+    
+    with open(file_path, "w") as f:
+        if truncate:
+            df.to_csv(f, line_terminator='\n', float_format = "%.4f" , index=False)
+        else:
+            df.to_csv(f, line_terminator='\n', index=False)
+
+    print('    Dados salvos em: ' + file_path)

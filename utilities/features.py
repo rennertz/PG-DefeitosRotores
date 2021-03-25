@@ -21,17 +21,17 @@ def extract_features(file_adress):
     signals = read_compressed_csv(file_adress, ratio)
 
     # produz a transformada de Fourrier para cada sinal real.
-    signals_fft, fft_amplitude = generate_fft(signals, ratio)
+    fft_complex, fft_amplitude = generate_fft(signals, ratio)
 
-    # gera as features, começando pela fundamental
+
+    # encontra a fundamental e o seu index
     fundamental = get_fundamental(fft_amplitude)
-
-    # extrai o index da fundamental
     index = fft_amplitude.index[fft_amplitude['freq_ax'] == fundamental] 
 
+    # gera o dicionário com as features do experimento
     features = {'fundamental': fundamental}
     features.update(get_n_harmonics(fft_amplitude, index))
-    features.update(get_phase_angles(signals_fft, index))
+    features.update(get_phase_angles(fft_complex, index))
     features.update(get_time_statistics(signals))
     # features.update(get_vel_rms(signals, sampling_freq))
 
@@ -44,16 +44,16 @@ def get_fundamental(fft_df):
 
     candidates = [0, 0, 0]
     for i in range(3):
-        index = fft_df['tacometro'].argmax()
+        index = fft_df.tacometro.argmax()
         candidates[i] = fft_df.freq_ax[index]
         for j in range(-2, 3):
-            fft_df['tacometro'][index+j] = 0
+            fft_df.tacometro[index+j] = 0
 
     return min(candidates)
 
 
 def get_n_harmonics(fft_df, fund_index, n_harmonics=5):
-    '''extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax'''
+    '''Extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax'''
 
     fft_df = fft_df.drop(['tacometro', 'freq_ax', 'microfone'], axis=1)
 
