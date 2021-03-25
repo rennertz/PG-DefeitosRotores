@@ -1,10 +1,7 @@
 # bibliotecas mais importantes
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
-import scipy.stats as stats
-import scipy.signal as signal
 
 # tema padrão do seaborn
 sns.set_theme()

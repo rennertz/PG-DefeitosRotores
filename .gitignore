@@ -1,4 +1,4 @@
-mafaulda/*
+mafaulda/*/*
 mafaulda_reduced/*
 redacao
 .vscode
@@ -135,3 +135,4 @@ dmypy.json
 
 # VS Code config
 .vscode/settings.json
+*.code-workspace
