@@ -1,13 +1,10 @@
 # bibliotecas mais importantes
 import pandas as pd
 import numpy as np
-import seaborn as sns
-
-# tema padrão do seaborn
-sns.set_theme()
+from scipy.signal import decimate
 
 class Measurement():
-    def __init__(self, address, ratio=50, verbose=False):
+    def __init__(self, address, ratio=10, verbose=False):
         # reduz o a frequência de amostragem 'ratio' vezes, tomando apenas 1 a cada 'ratio' sinais
         self.ratio = ratio
         self.sampling_freq=50000/ratio
@@ -27,23 +24,24 @@ class Measurement():
         
     
     def read_file(self, address, ratio):
-        # poupa apenas as linhas múltiplas de 'ratio' e lista as demais para exclusão
-        skip=[i for i in range(0,250000) if i%ratio] 
-
-        # lê dados no tempo
+        '''lê dados no tempo'''
+        
         signals = pd.read_csv(
             address, 
             header=None, 
             names=['tacometro','ax1','rad1','tg1','ax2','rad2','tg2','microfone'],
-            skiprows=skip,
         )
+        
+        if ratio > 1:
+            signals = signals.apply(decimate, axis=0, q=ratio)
 
         # reordena colunas
         return signals[['tacometro','microfone','ax1','ax2','rad1','rad2','tg1','tg2']]
 
 
     def fft_transform(self, signals_df, sampling_freq):
-        # aplica transformada de Fourrier, converte para valores absolutos 
+        '''aplica transformada de Fourrier e converte para valores absolutos'''
+        
         signals_fft = signals_df.apply(np.fft.rfft, axis=0, norm="ortho")
         signals_fft_amplitude = signals_fft.apply(np.abs)
         signals_fft_phase = signals_fft.apply(np.angle, deg=True)
