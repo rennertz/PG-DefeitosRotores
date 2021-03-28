@@ -8,21 +8,10 @@ import numpy as np
 import scipy.stats as stats
 from scipy import signal
 from scipy import integrate
-from utilities.general import read_compressed_csv, generate_fft
 
 
-def extract_features(file_adress):
-    '''Função principal, abre o arquivo cvs e utiliza as demais funções'''
-
-    # reduz a frequência da aquisição 'ratio' vezes, tomando apenas 1 a cada 'ratio' amostras temporais
-    ratio = 50
-
-    # abre o arquivo e lê linhas selecionadas
-    signals = read_compressed_csv(file_adress, ratio)
-
-    # produz a transformada de Fourrier para cada sinal real.
-    fft_complex, fft_amplitude = generate_fft(signals, ratio)
-
+def extract_features(signals, fft_phase, fft_amplitude, ratio = 10):
+    '''Função principal, chama as demais funções'''
 
     # encontra a fundamental e o seu index
     fundamental = get_fundamental(fft_amplitude)
@@ -31,9 +20,9 @@ def extract_features(file_adress):
     # gera o dicionário com as features do experimento
     features = {'fundamental': fundamental}
     features.update(get_n_harmonics(fft_amplitude, index))
-    features.update(get_phase_angles(fft_complex, index))
+    features.update(get_phase_angles(fft_phase, index))
     features.update(get_time_statistics(signals))
-    # features.update(get_vel_rms(signals, sampling_freq))
+    features.update(get_vel_rms(signals, ratio))
 
     return features
 
@@ -122,20 +111,24 @@ def get_time_statistics(time_df):
     return time_statistics
 
 
-def get_vel_rms(time_df, sampl_freq):
-    '''transforna-se o sinal de m/s² para mm/s²'''
+def get_vel_rms(time_df, ratio=10):
+    '''integra o sinal da aceleração para a velocidade e extrai o valor-eficaz'''
 
-    acc_mmps2 = time_df.drop(['tacometro', 'microfone'], axis=1) *1000
+    # define nova frequência de aquisição. 
+    sampling_freq = 50000/ratio
+    # note: 50 kHz é a frequência de aquisição original dos dados 
+
+    acc_mmps2 = time_df.drop(['tacometro', 'microfone'], axis=1)
 
     # instancia o filtro passa alta arbitrário em 10 Hz 
-    sos = signal.butter(6, 10, 'highpass', fs=sampl_freq, output='sos')
+    sos = signal.butter(6, 10, 'highpass', fs=sampling_freq, output='sos')
 
     # calcula velocidade pela integral (trapezoidal) dos sinais
     velocity_filtered = pd.DataFrame()
-    dt = 1/sampl_freq
+    dt = 1/sampling_freq
     for col in acc_mmps2.columns:
-        velocity_filtered[col] = integrate.cumtrapz(y=np.array(acc_mmps2[col]), dx=dt, initial=0)
-        velocity_filtered[col] = signal.sosfilt(sos, velocity_filtered[col])
+        velocity_filtered[col] = signal.sosfilt(sos, acc_mmps2[col])
+        velocity_filtered[col] = integrate.cumtrapz(y=np.array(velocity_filtered[col]), dx=dt, initial=0)
 
     vel_rms = velocity_filtered.pow(2).sum().pow(1/2).to_dict()
 

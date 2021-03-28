@@ -36,7 +36,7 @@ class Measurement():
             signals = signals.apply(decimate, axis=0, q=ratio)
 
         # reordena colunas
-        return signals[['tacometro','microfone','ax1','ax2','rad1','rad2','tg1','tg2']]
+        return signals[['ax1','ax2','rad1','rad2','tg1','tg2', 'tacometro','microfone']]
 
 
     def fft_transform(self, signals_df, sampling_freq):
