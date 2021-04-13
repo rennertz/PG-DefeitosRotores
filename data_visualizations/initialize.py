@@ -1,7 +1,7 @@
 # bibliotecas mais importantes
 import pandas as pd
 import numpy as np
-from scipy.signal import decimate
+from scipy.signal import decimate, butter, sosfilt
 
 class Measurement():
     def __init__(self, address, ratio=10, verbose=False):
@@ -15,7 +15,7 @@ class Measurement():
         self.freq, self.phase = self.fft_transform(self.time, self.sampling_freq)
         self.freq_acc = self.freq.drop(['tacometro', 'microfone'], axis=1)
         
-        self.fundamental, self.fundamental_idx = self.extract_fundamental(self.freq)
+        self.rotacao_calc, self.rotacao_calc_idx = self.extract_rotacao_calc(self.freq)
         
         
         if verbose:
@@ -24,7 +24,7 @@ class Measurement():
         
     
     def read_file(self, address, ratio):
-        '''lê dados no tempo'''
+        '''lê dados no tempo, aplica downsamplig e filtra componentes abaixo de 0.5 Hz'''
         
         signals = pd.read_csv(
             address, 
@@ -34,9 +34,14 @@ class Measurement():
         
         if ratio > 1:
             signals = signals.apply(decimate, axis=0, q=ratio)
+        
+        sos = butter(6, 0.5, 'highpass', fs=self.sampling_freq, output='sos')
+        for col in signals.columns:
+            signals[col] = sosfilt(sos, signals[col])
+
 
         # reordena colunas
-        return signals[['ax1','ax2','rad1','rad2','tg1','tg2', 'tacometro','microfone']]
+        return signals[['rad1','rad2','tg1','tg2','ax1','ax2','tacometro','microfone']]
 
 
     def fft_transform(self, signals_df, sampling_freq):
@@ -55,7 +60,7 @@ class Measurement():
         return signals_fft_amplitude, signals_fft_phase
     
     
-    def extract_fundamental(self, fft_df):
+    def extract_rotacao_calc(self, fft_df):
         tachometer_fft = fft_df['tacometro'].copy(deep=True)
         candidates = [0, 0, 0]
 
@@ -68,8 +73,8 @@ class Measurement():
             for j in range(-2, 3):
                 tachometer_fft[index+j] = 0
 
-        # deve retornar pico o de menor frequência, evitando o mascaramento da fundamental pelas harmonicas
-        fundamental = min(candidates)
-        index = fft_df.index[fft_df['freq_ax'] == fundamental]
+        # deve retornar pico o de menor frequência, evitando o mascaramento da rotacao_calc pelas harmonicas
+        rotacao_calc = min(candidates)
+        index = fft_df.index[fft_df['freq_ax'] == rotacao_calc]
 
-        return fundamental, index[0]
+        return rotacao_calc, index[0]

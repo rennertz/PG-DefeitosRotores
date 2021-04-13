@@ -8,14 +8,14 @@ def gera_corr_df(defect_name, df_original, df_normalized, feat_to_eixo, feat_to_
     # calcula correlações
     corr = df_original.corr()['severidade']
     # exclui informações não relevantes
-    corr = corr.drop(['severidade', 'fundamental', 'fundamental_aprox'])
+    corr = corr.drop(['severidade', 'rotacao_calc', 'rotacao_calc_aprox'])
     corr = corr.to_frame('correlacao')
     corr['normalizado'] = False
 
     # calcula correlações
     corrnorm = df_normalized.corr()['severidade']
     # exclui informações não relevantes
-    corrnorm = corrnorm.drop(['severidade', 'fundamental', 'fundamental_aprox'])
+    corrnorm = corrnorm.drop(['severidade', 'rotacao_calc', 'rotacao_calc_aprox'])
     corrnorm = corrnorm.to_frame('correlacao')
     corrnorm['normalizado'] = True
 
@@ -64,9 +64,9 @@ def plot_detailed_comparisson(feature, defect_name, df_original, df_normalized):
     fig.suptitle('Variação de "'+ defect_name +'" em relação a "' + feature + '"')
 
     sns.pointplot(data = df_original, x = 'severidade',
-                  y = feature, hue = 'fundamental_aprox', ax=ax1)
+                  y = feature, hue = 'rotacao_calc_aprox', ax=ax1)
     sns.pointplot(data = df_normalized, x = 'severidade',
-                  y = feature, hue = 'fundamental_aprox', ax=ax2)
+                  y = feature, hue = 'rotacao_calc_aprox', ax=ax2)
 
     ax1.set_title('Não normalizado')
     ax2.set_title('Normalizado')
@@ -77,10 +77,10 @@ def plot_detailed_comparisson(feature, defect_name, df_original, df_normalized):
 def plot_change_correlation(defect_type, df_original, df_normalized, decrescente=False, ax=None, cut=3, **plt_kwargs):
 
     corr = df_original.corr().abs()['severidade']
-    corr = corr.drop(['severidade', 'fundamental', 'fundamental_aprox']).rename('original')
+    corr = corr.drop(['severidade', 'rotacao_calc', 'rotacao_calc_aprox']).rename('original')
 
     corr_norm = df_normalized.corr().abs()['severidade']
-    corr_norm = corr_norm.drop(['severidade', 'fundamental', 'fundamental_aprox']).rename('normalizado')
+    corr_norm = corr_norm.drop(['severidade', 'rotacao_calc', 'rotacao_calc_aprox']).rename('normalizado')
 
     compare = pd.concat([corr, corr_norm], axis=1)
     compare['diff'] = compare['normalizado'] - compare['original']

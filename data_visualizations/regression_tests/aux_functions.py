@@ -6,33 +6,33 @@ import seaborn as sns
 import sklearn.metrics as metrics
 
 
-# criará lista com a fundamental discretizada de acordo com a dezena arredondada
-def discretizar_fundamental(data_in, feature_list):
-    # enconta a posição da fundamental no np.array
-    fundamental_list = data_in[:, feature_list.index('fundamental')]
+# criará lista com a rotacao_calc discretizada de acordo com a dezena arredondada
+def discretizar_rotacao_calc(data_in, feature_list):
+    # enconta a posição da rotacao_calc no np.array
+    rotacao_calc_list = data_in[:, feature_list.index('rotacao_calc')]
 
-    # cria bins e mapeia fundamentals de acordo
+    # cria bins e mapeia rotacao_calcs de acordo
     bins = [0, 15, 25, 35, 45, 55, 65]
-    fundamental_decimal = np.digitize(fundamental_list, bins)
+    rotacao_calc_decimal = np.digitize(rotacao_calc_list, bins)
 
     # retorna np.array com as dezenas
-    return fundamental_decimal*10 
+    return rotacao_calc_decimal*10 
 
 
 # retornará o DataFramde com resultados, long-form data
 def gera_df_resultados(test_data, feature_list, prediction, real):
     error = prediction - real
 
-    disc_rot = list(discretizar_fundamental(test_data, feature_list))
+    disc_rot = list(discretizar_rotacao_calc(test_data, feature_list))
 
     resultados = pd.DataFrame({
         'real':        real.tolist(), 
         'pred':  prediction.tolist(), 
         'erro':       error.tolist(), 
-        'rotacao_discreta': disc_rot,
+        'rotacao_manual_discreta': disc_rot,
     })
 
-    resultados = resultados.sort_values(['real', 'rotacao_discreta'])
+    resultados = resultados.sort_values(['real', 'rotacao_manual_discreta'])
 
     return resultados
 
@@ -91,7 +91,7 @@ def plota_resultados_segregados(results, model_id, fault=None):
     # plota linhas com intervalos de 95% de confiança,
     g = sns.relplot(data=results, 
                     x='real', y='pred', err_style="bars", col_wrap=3,
-                    col='rotacao_discreta', kind="line", height=3, aspect=1)
+                    col='rotacao_manual_discreta', kind="line", height=3, aspect=1)
     g.fig.suptitle(model_id)
     # insere linha de referência
     for i in range(len(g.axes)):
