@@ -9,7 +9,8 @@ iterate_and_extract(generate_compressed_mafaulda=False)
 
 # OBS:
 # generate_compressed mafaulda é opcional 
-# a opção gera uma cópia comprimida da MAFAULDA para gerar plot waterfall
+# a opção gera uma cópia comprimida da MAFAULDA,
+# necessária para gerar plot waterfall
 
 
 # exibe o tempo de execução total ao usuário

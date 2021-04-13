@@ -33,12 +33,12 @@ def iterate_and_extract(generate_compressed_mafaulda=False):
         for folder in ['horizontal-misalignment', 'vertical-misalignment', 'imbalance', 'normal']:
             Path("mafaulda_reduced/"+folder).mkdir(parents=True, exist_ok=True)
 
-        print("\n  Iniciando extração de características e compressão da MAFAULDA \n")
+        print("  Iniciando extração de características e compressão da MAFAULDA \n")
     else:
-        print("\n  Iniciando extração de características\n")
+        print("  Iniciando extração de características\n")
 
-    # instancia o DataFrame com as primeiras colunas
-    df = pd.DataFrame(columns=['condicao', 'severidade', 'rotacao', 'fundamental'])
+    # instancia a lista com as medilções
+    measurements = []
 
 
     # abre a pasta de cada defeito
@@ -58,8 +58,8 @@ def iterate_and_extract(generate_compressed_mafaulda=False):
 
             if generate_compressed_mafaulda:
                 # instancia os DataFrames do conjunto com várias rotações
-                df_time = pd.DataFrame(columns=['rotacao'])
-                df_freq = pd.DataFrame(columns=['rotacao'])
+                time_dfs = []
+                freq_dfs = []
 
 
             # abre cada arquivo, cujo nome indica a velocidade de rotação
@@ -71,43 +71,48 @@ def iterate_and_extract(generate_compressed_mafaulda=False):
                 # identifica o tipo de defeito, a severidade e a rotaçao
                 data = {'condicao': condition,
                         'severidade': severity_numeric,
-                        'rotacao': float(rotation[:-4]) 
+                        'rotacao_manual': float(rotation[:-4]) 
                 }
 
                 # aponta o arquivo e faz a leitura resumida
                 signals = read_compressed_csv(f"mafaulda/{condition}/{severity}/{rotation}", RATIO)
-                fft_amplitude, fft_phase = generate_fft(signals, RATIO)
+                fft_amplitude, fft = generate_fft(signals, RATIO)
 
                 # extrai características (toma muito tempo!)
-                features = extract_features(signals, fft_phase, fft_amplitude, RATIO)
+                features = extract_features(signals, fft, fft_amplitude, RATIO)
                 data.update(features)
 
                 # adiciona o novo dado ao dataframe
-                df = df.append(data, ignore_index=True)
+                measurements.append(data)
 
                 if generate_compressed_mafaulda:
                     # recupera o nome do arquivo como rotaçao
-                    signals['rotacao'] = rotation[:-4]
-                    fft_amplitude['rotacao'] = rotation[:-4]
+                    signals['rotacao_manual'] = features['rotacao_calc']
+                    fft_amplitude['rotacao_manual'] = features['rotacao_calc']
 
                     # adiciona os sinais da rotação específica ao dataframe conjunto
-                    df_time = df_time.append(signals, ignore_index=True)
-                    df_freq = df_freq.append(fft_amplitude, ignore_index=True)
+                    time_dfs.append(signals)
+                    freq_dfs.append(fft_amplitude)
             
 
             if generate_compressed_mafaulda:
+                df_time = pd.concat(time_dfs, axis=0)
+                df_freq = pd.concat(freq_dfs, axis=0)
+
                 print(' ')
                 save_file(f'mafaulda_reduced/{condition}/{severity}.csv', df_time, truncate=True)
                 save_file(f'mafaulda_reduced/{condition}/{severity}_fft.csv', df_freq, truncate=True)
-                print('\n')
+                print(' ')
         
         elapsed_time = time.time()-instance_time
         print('    Execução em  {} minutos e {:.1f} segundos\n\n'.format(
             int(elapsed_time//60), elapsed_time % 60))
     
-    df.info()
 
-    save_file("data.csv", df)
+    df = pd.DataFrame(measurements)
+    df.info()
+    print(' ')
+    save_file("data/data.csv", df)
 
     return df
 

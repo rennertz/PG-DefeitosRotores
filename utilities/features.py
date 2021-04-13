@@ -1,7 +1,7 @@
-'''
+"""
 Coleção de funções para extração das características julgadas
 relevantes para o terinamento do modelo ML
-'''
+"""
 
 import pandas as pd
 import numpy as np
@@ -10,48 +10,61 @@ from scipy import signal
 from scipy import integrate
 
 
-def extract_features(signals, fft_phase, fft_amplitude, ratio = 10):
-    '''Função principal, chama as demais funções'''
+def extract_features(signals, fft, fft_amplitude, ratio = 10):
+    """Função principal, chama as demais funções"""
 
-    # encontra a fundamental e o seu index
-    fundamental = get_fundamental(fft_amplitude)
-    index = fft_amplitude.index[fft_amplitude['freq_ax'] == fundamental] 
+    # retira o sinal do microfone da análise
+    signals.pop('microfone')
+    fft.pop('microfone')
+    fft_amplitude.pop('microfone')
+
+    # encontra a rotacao_calc e o seu index
+    rotacao_calc = get_rotation(fft_amplitude)
+    index = fft_amplitude.index[fft_amplitude['freq_ax'] == rotacao_calc] 
+
+    # remove colunas após a determinação da rotação
+    signals.pop('tacometro')
+    fft.pop('freq_ax')
+    fft_amplitude.pop('tacometro')
+
 
     # gera o dicionário com as features do experimento
-    features = {'fundamental': fundamental}
+    features = {'rotacao_calc': rotacao_calc}
     features.update(get_n_harmonics(fft_amplitude, index))
-    features.update(get_phase_angles(fft_phase, index))
+    features.update(get_phase_angles(fft, index))
     features.update(get_time_statistics(signals))
-    features.update(get_vel_rms(signals, ratio))
+    features.update(get_freq_statistics(fft_amplitude))
+    # features.update(get_vel_rms(signals, ratio))
 
     return features
 
 
-def get_fundamental(fft_df):
-    '''Dentre os 3 maiores picos na fft do tacômetro, deve retornar o de menor frequência.
-    Assim, evita-se o mascaramento da fundamental pelas harmonicas'''
+def get_rotation(fft_amplitude_df):
+    """Dentre os 3 maiores picos na fft do tacômetro, deve retornar o de menor frequência.
+    Assim, evita-se o mascaramento da rotacao_calc pelas harmonicas"""
+
+    # cópia que evita sobrescrição de valores no DataFrame original
+    tacometro_copy = fft_amplitude_df['tacometro'].copy()
 
     candidates = [0, 0, 0]
     for i in range(3):
-        index = fft_df.tacometro.argmax()
-        candidates[i] = fft_df.freq_ax[index]
+        index = tacometro_copy.argmax()
+        candidates[i] = fft_amplitude_df.freq_ax[index]
         for j in range(-2, 3):
-            fft_df.tacometro[index+j] = 0
+            tacometro_copy[index+j] = 0
 
     return min(candidates)
 
 
-def get_n_harmonics(fft_df, fund_index, n_harmonics=5):
-    '''Extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax'''
-
-    fft_df = fft_df.drop(['tacometro', 'freq_ax', 'microfone'], axis=1)
+def get_n_harmonics(fft_amplitude_df, fund_index, n_harmonics=3):
+    """Extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax"""
 
     harmonic_features = {}
     idx = fund_index[0]
     for i in range(1, n_harmonics+1):
         # resgata na frequência os valores na harmonica i
-        # a partir do maior valor encontrado em um intervalo de +/- 5 Hz em torno da posição i*fundamental
-        harm_values = fft_df.iloc[idx*i-5:idx*i+5].max()
+        # a partir do maior valor encontrado em um intervalo de +/- 5 Hz em torno da posição i*rotacao_calc
+        harm_values = fft_amplitude_df.iloc[idx*i-3:idx*i+3].max()
         
         # adiciona às features com o respectivo sulfixo do harmonico i
         harmonic_features.update({k+'_{}h'.format(i): v for k, v in harm_values.items()})
@@ -60,65 +73,105 @@ def get_n_harmonics(fft_df, fund_index, n_harmonics=5):
 
 
 def get_phase_angles(fft_df, fund_index):
-    '''extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax'''
-
-    fft_df = fft_df.drop(['microfone'], axis=1)
+    """extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax"""
     
-    # resgata FFT na fundamental para cada eixo
+    # resgata FFT na rotacao_calc para cada eixo
     fft_df = fft_df.iloc[fund_index].squeeze()
+
+    # encontra a diferença do ângulo de fase de cada eixo 
+    # em relação ao do tacômetro antes de descarta-lo
+    fft_df = fft_df / fft_df['tacometro']
+    fft_df.pop('tacometro')
     
     # calcula o angulo de fase em radianos
     angle = fft_df.apply(np.angle)
-
-    # subtrai o ângulo de fase de cada eixo em relação ao do tacômetro antes de descarta-lo
-    angle = angle - angle['tacometro']
-    angle.pop('tacometro')
     
     # recupera ângulo para o intervalo -pi a pi graus
-    angle = (angle + np.pi) % (2*np.pi) - np.pi
+    # angle = (angle + np.pi) % (2*np.pi) - np.pi
 
     # retorna features com o respectivo sulfixo
     return {k+'_phase': v for k, v in angle.items()}
 
 
 def get_time_statistics(time_df):
-    '''extrai entropia, média e curtose para os sinais, exceto para o tacometro'''
-
-    time_df = time_df.drop('tacometro', axis=1)
-
-    # média    ## REMOVIDAS POR NÂO FAZEREM SENTIDO FÍSICO 
-    # medias = time_df.mean().to_dict()
-    # medias = {k+'_mean': v for k,v in medias.items()}
-
-    # curtose
-    curtoses = time_df.kurtosis().to_dict()
-    curtoses = {k+'_kurt':v for k, v in curtoses.items()} 
+    """extrai estatísticas do sinal no tempo"""
     
-    # entropia
-    entropias = calc_entropy(time_df)
-    entropias = {k+'_entr':v for k,v in entropias.items()}
+    # valores auxiliares
+    absolute_max = time_df.abs().max()
+    absolute_average = time_df.abs().mean()
 
-    # RMS
-    rms = time_df.pow(2).sum().pow(1/2).to_dict()
-    rms = {k+'_rms':v for k, v in rms.items()}
+    # valores extraídos
+    rms = time_df.pow(2).sum().pow(1/2)
+    sra = time_df.abs().pow(1/2).mean().pow(2)
+    kurtosis = time_df.kurtosis()
+    sqewness = time_df.skew()
+    peak_to_peak = time_df.max() - time_df.min()
+    crest = absolute_max / rms
+    impulse = absolute_max / absolute_average
+    margin = absolute_max / sra
+    shape = rms / absolute_average
+    kurtosis_f = kurtosis / rms.pow(4)
+    entropy = calc_entropy(time_df)
+    
+    rms_dic =           {k+'_timestat_rms':v for k, v in rms.to_dict().items()}
+    sra_dic =           {k+'_timestat_sra':v for k, v in sra.to_dict().items()}
+    kurtosis_dic =      {k+'_timestat_kurt':v for k, v in kurtosis.to_dict().items()}
+    sqewness_dic =      {k+'_timestat_sqew':v for k, v in sqewness.to_dict().items()}
+    peak_to_peak_dic =  {k+'_timestat_peak':v for k, v in peak_to_peak.to_dict().items()}
+    absolute_max_dic =  {k+'_timestat_abs_max':v for k, v in absolute_max.to_dict().items()}
+    crest_dic =         {k+'_timestat_crest':v for k, v in crest.to_dict().items()}
+    impulse_dic =       {k+'_timestat_impulse':v for k, v in impulse.to_dict().items()}
+    margin_dic =        {k+'_timestat_margin':v for k, v in margin.to_dict().items()}
+    shape_dic =         {k+'_timestat_shape':v for k, v in shape.to_dict().items()}
+    kurtosis_f_dic =    {k+'_timestat_kurt_f':v for k, v in kurtosis_f.to_dict().items()}
+    entropy_dic =       {k+'_timestat_entropy':v for k, v in entropy.to_dict().items()}
 
-    # reúne todos os valores
-    # time_statistics.update(medias)
-    time_statistics = entropias
-    time_statistics.update(curtoses)
-    time_statistics.update(rms)
+    time_statistics = {}
+    time_statistics.update(rms_dic)
+    time_statistics.update(sra_dic)
+    time_statistics.update(kurtosis_dic)
+    time_statistics.update(sqewness_dic)
+    time_statistics.update(peak_to_peak_dic)
+    time_statistics.update(absolute_max_dic)
+    time_statistics.update(crest_dic)
+    time_statistics.update(impulse_dic)
+    time_statistics.update(margin_dic)
+    time_statistics.update(shape_dic)
+    time_statistics.update(kurtosis_f_dic)
+    time_statistics.update(entropy_dic)
 
     return time_statistics
 
 
+def get_freq_statistics(fft_amplitude_df):
+    """extrai estatísticas do sinal no tempo"""
+
+    freq_ax = fft_amplitude_df.pop('freq_ax')
+
+    sum_axis = fft_amplitude_df.sum()
+
+    freq_center = (fft_amplitude_df.T * freq_ax).T.sum() /  sum_axis
+    rmsf = ((fft_amplitude_df.T**2 * freq_ax).T.sum() /  sum_axis).pow(1/2)
+    rvf = (((fft_amplitude_df - freq_center).T**2 * freq_ax).T.sum() /  sum_axis).pow(1/2)
+
+    freq_center_dict = {k+'_freqstat_fc':v for k, v in freq_center.to_dict().items()}
+    rmsf_dict = {k+'_freqstat_rmsf':v for k, v in rmsf.to_dict().items()}
+    rvf_dict = {k+'_freqstat_rvf':v for k, v in rvf.to_dict().items()}
+
+    freq_statistics = {}
+    freq_statistics.update(freq_center_dict)
+    freq_statistics.update(rmsf_dict)
+    freq_statistics.update(rvf_dict)
+
+    return freq_statistics
+    
+
 def get_vel_rms(time_df, ratio=10):
-    '''integra o sinal da aceleração para a velocidade e extrai o valor-eficaz'''
+    """integra o sinal da aceleração para a velocidade e extrai o valor-eficaz"""
 
     # define nova frequência de aquisição. 
     sampling_freq = 50000/ratio
     # note: 50 kHz é a frequência de aquisição original dos dados 
-
-    acc_mmps2 = time_df.drop(['tacometro', 'microfone'], axis=1)
 
     # instancia o filtro passa alta arbitrário em 10 Hz 
     sos = signal.butter(6, 10, 'highpass', fs=sampling_freq, output='sos')
@@ -126,8 +179,8 @@ def get_vel_rms(time_df, ratio=10):
     # calcula velocidade pela integral (trapezoidal) dos sinais
     velocity_filtered = pd.DataFrame()
     dt = 1/sampling_freq
-    for col in acc_mmps2.columns:
-        velocity_filtered[col] = signal.sosfilt(sos, acc_mmps2[col])
+    for col in time_df.columns:
+        velocity_filtered[col] = signal.sosfilt(sos, time_df[col])
         velocity_filtered[col] = integrate.cumtrapz(y=np.array(velocity_filtered[col]), dx=dt, initial=0)
 
     vel_rms = velocity_filtered.pow(2).sum().pow(1/2).to_dict()
@@ -136,11 +189,11 @@ def get_vel_rms(time_df, ratio=10):
 
 
 def calc_entropy(dataframe):
-    entropias = {}
+    entropias = pd.Series()
     
     for col in dataframe.columns.values[:]:
         # divide cada sinal em 100 faixas e faz a contagem para cada faixa
-        out = np.histogram(dataframe[col], bins=100)[0]
+        out = np.histogram(dataframe[col], bins=40)[0]
         # calcula a entropia de shannon
         entropias[col] = stats.entropy(out)
         

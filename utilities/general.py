@@ -36,15 +36,13 @@ def generate_fft(signals, ratio = RATIO):
 
     # obtém valor absoluto a partir da transformada complexa
     fft_amplitude = signals_fft.apply(np.abs)
-    fft_phase = signals_fft.apply(np.angle)
-
+    
     # gera o eixo da frequência, dado que a frequência de Nyquist é sampling_freq/2
-    fft_amplitude['freq_ax'] = np.linspace(0, sampling_freq/2, 
+    signals_fft['freq_ax'] = np.linspace(0, sampling_freq/2, 
                                            signals_fft.shape[0])
-    fft_phase['freq_ax'] = fft_amplitude['freq_ax']
-                                           
+    fft_amplitude['freq_ax'] = signals_fft['freq_ax']                       
 
-    return fft_amplitude, fft_phase
+    return fft_amplitude, signals_fft
 
 
 def save_file(file_path, df, truncate=False):
