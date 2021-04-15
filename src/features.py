@@ -150,9 +150,9 @@ def get_freq_statistics(fft_amplitude_df):
 
     sum_axis = fft_amplitude_df.sum()
 
-    freq_center = (fft_amplitude_df.T * freq_ax).T.sum() /  sum_axis
-    rmsf = ((fft_amplitude_df.T**2 * freq_ax).T.sum() /  sum_axis).pow(1/2)
-    rvf = (((fft_amplitude_df - freq_center).T**2 * freq_ax).T.sum() /  sum_axis).pow(1/2)
+    freq_center = (freq_ax * fft_amplitude_df.T).T.sum() /  sum_axis
+    rmsf = ((freq_ax**2 * fft_amplitude_df.T).T.sum() /  sum_axis).pow(1/2)
+    rvf = ((np.subtract.outer(freq_ax.values, freq_center.values)**2 * fft_amplitude_df).sum() /  sum_axis).pow(1/2)
 
     freq_center_dict = {k+'_freqstat_fc':v for k, v in freq_center.to_dict().items()}
     rmsf_dict = {k+'_freqstat_rmsf':v for k, v in rmsf.to_dict().items()}

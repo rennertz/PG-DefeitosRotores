@@ -1,5 +1,5 @@
 import time
-from utilities.processes import iterate_and_extract
+from src.processes import iterate_and_extract
 
 # inicia a cronometragem
 start_time = time.time()
