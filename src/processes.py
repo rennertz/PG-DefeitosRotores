@@ -5,8 +5,8 @@ from pathlib import Path
 import os
 import pandas as pd
 import time
-from utilities.general import read_compressed_csv, generate_fft, save_file
-from utilities.features import extract_features
+from src.general import read_compressed_csv, generate_fft, save_file
+from src.features import extract_features
 
 RATIO = 10
 
