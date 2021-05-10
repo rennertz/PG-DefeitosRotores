@@ -16,6 +16,7 @@ class Measurement():
         self.freq_acc = self.freq.drop(['tacometro', 'microfone'], axis=1)
         
         self.rotacao_calc, self.rotacao_calc_idx = self.extract_rotacao_calc(self.freq)
+        self.harmonics = self.get_n_harmonics(self.freq, self.rotacao_calc_idx, n_harmonics=3)
         
         
         if verbose:
@@ -47,7 +48,7 @@ class Measurement():
     def fft_transform(self, signals_df, sampling_freq):
         '''aplica transformada de Fourrier e converte para valores absolutos'''
         
-        signals_fft = signals_df.apply(np.fft.rfft, axis=0, norm="ortho")
+        signals_fft = signals_df.apply(np.fft.rfft, axis=0, norm="forward")
         signals_fft_amplitude = signals_fft.apply(np.abs)
         signals_fft_phase = signals_fft.apply(np.angle, deg=True)
 
@@ -78,3 +79,17 @@ class Measurement():
         index = fft_df.index[fft_df['freq_ax'] == rotacao_calc]
 
         return rotacao_calc, index[0]
+    
+    def get_n_harmonics(self, fft_amplitude_df, fund_index, n_harmonics=3):
+        """Extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax"""
+
+        idx = fund_index
+        harm_values = {}
+        for i in range(1, n_harmonics+1):
+            # resgata na frequência os valores na harmonica i
+            # a partir do maior valor encontrado em um intervalo de +/- 1 Hz em torno da posição i*rotacao_calc
+            harm_values.update({i: fft_amplitude_df.iloc[(idx-5)*i:(idx+5)*i].max()})
+        
+        harmonics = pd.DataFrame(harm_values)
+
+        return harmonics

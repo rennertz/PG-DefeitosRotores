@@ -58,13 +58,14 @@ def get_rotation(fft_amplitude_df):
 
 def get_n_harmonics(fft_amplitude_df, fund_index, n_harmonics=3):
     """Extrai todos os valores nos n primeiros harmônicos, exceto para o tacometro e freq_ax"""
+    fft_amplitude_df = fft_amplitude_df.drop(['freq_ax'], axis=1)
 
     harmonic_features = {}
     idx = fund_index[0]
     for i in range(1, n_harmonics+1):
         # resgata na frequência os valores na harmonica i
         # a partir do maior valor encontrado em um intervalo de +/- 5 Hz em torno da posição i*rotacao_calc
-        harm_values = fft_amplitude_df.iloc[idx*i-3:idx*i+3].max()
+        harm_values = fft_amplitude_df.iloc[(idx-5)*i:(idx+5)*i].max()
         
         # adiciona às features com o respectivo sulfixo do harmonico i
         harmonic_features.update({k+'_{}h'.format(i): v for k, v in harm_values.items()})
@@ -85,9 +86,6 @@ def get_phase_angles(fft_df, fund_index):
     
     # calcula o angulo de fase em radianos
     angle = fft_df.apply(np.angle)
-    
-    # recupera ângulo para o intervalo -pi a pi graus
-    # angle = (angle + np.pi) % (2*np.pi) - np.pi
 
     # retorna features com o respectivo sulfixo
     return {k+'_phase': v for k, v in angle.items()}
@@ -118,7 +116,6 @@ def get_time_statistics(time_df):
     kurtosis_dic =      {k+'_timestat_kurt':v for k, v in kurtosis.to_dict().items()}
     sqewness_dic =      {k+'_timestat_sqew':v for k, v in sqewness.to_dict().items()}
     peak_to_peak_dic =  {k+'_timestat_peak':v for k, v in peak_to_peak.to_dict().items()}
-    absolute_max_dic =  {k+'_timestat_abs_max':v for k, v in absolute_max.to_dict().items()}
     crest_dic =         {k+'_timestat_crest':v for k, v in crest.to_dict().items()}
     impulse_dic =       {k+'_timestat_impulse':v for k, v in impulse.to_dict().items()}
     margin_dic =        {k+'_timestat_margin':v for k, v in margin.to_dict().items()}
@@ -132,7 +129,6 @@ def get_time_statistics(time_df):
     time_statistics.update(kurtosis_dic)
     time_statistics.update(sqewness_dic)
     time_statistics.update(peak_to_peak_dic)
-    time_statistics.update(absolute_max_dic)
     time_statistics.update(crest_dic)
     time_statistics.update(impulse_dic)
     time_statistics.update(margin_dic)
@@ -146,7 +142,8 @@ def get_time_statistics(time_df):
 def get_freq_statistics(fft_amplitude_df):
     """extrai estatísticas do sinal no tempo"""
 
-    freq_ax = fft_amplitude_df.pop('freq_ax')
+    freq_ax = fft_amplitude_df['freq_ax']
+    fft_amplitude_df = fft_amplitude_df.drop(['freq_ax'], axis=1)
 
     sum_axis = fft_amplitude_df.sum()
 

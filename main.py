@@ -5,7 +5,7 @@ from src.processes import iterate_and_extract
 start_time = time.time()
 
 # extrai características, salva data.csv e exibe o resumo
-iterate_and_extract(generate_compressed_mafaulda=False)
+iterate_and_extract(generate_compressed_mafaulda=True)
 
 # OBS:
 # generate_compressed mafaulda é opcional 

@@ -30,7 +30,7 @@ def generate_fft(signals, ratio = RATIO):
     # note: 50 kHz é a frequência de aquisição original dos dados 
 
     # produz a transformada de Fourrier para cada sinal real. 
-    signals_fft = signals.apply(np.fft.rfft, axis=0, norm="ortho")
+    signals_fft = signals.apply(np.fft.rfft, axis=0, norm="forward")
     # note: a rfft apresenta apenas a metade relevante da transformada, 
     # pois sinais reais produzem transformadas simétricas
 
