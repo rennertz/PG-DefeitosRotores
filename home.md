@@ -9,10 +9,10 @@ Visualizaçoes geradas para a análise exploratória dos dados e melhor entendim
 * [Plots em cascata](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/data_visualizations/016-waterfall.ipynb)
 
 ## Modelagem
-Classificador de defeitos e análise das características utilizadas
+Classificador de defeitos e análise das características utilizadas. Estão na versão HTML porque o servidor do nbviewer demora +1dia para atualizar.
 
-* [Classificador linearSVM](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/classification_models/HTML_version/010-general_classification.ipynb)
-* [Visualização dos dados e separabilidade](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/classification_models/HTML_version/classification_models/040-2d_plots.ipynb)
+* Classificador linearSVM [em HTML](https://htmlpreview.github.io/?https://github.com/rennertz/PG-DefeitosRotores/blob/main/classification_models/HTML_version/010-general_classification.html)
+* Visualização dos dados e separabilidade[em HTML](https://htmlpreview.github.io/?https://github.com/rennertz/PG-DefeitosRotores/blob/main/classification_models/HTML_version/010-general_classification.html)
 
 <br />
 
