@@ -2,7 +2,7 @@
 
 Este é o meu Projeto de Graduação em Engenharia Mecânica na UFES, defendido no ano 2021. No [**texto**](thesis.pdf) é apresentada a fundamentação, a metodologia, os materiais e os resultados. Neste repositório há os códigos utilizados e ainda vários experimentos que não entraram no trabalho.
 
-Em resumo, aqui você encontra os [módulos python](src) utlizados no processamento dos dados de vibração, o [dataset](data/data.csv) gerado e minhas análises em [**notebooks jupyter**](homepage.ipynb).
+Em resumo, aqui você encontra os [módulos python](src) utlizados no processamento dos dados de vibração, o [dataset](data/data.csv) gerado e minhas análises em [**notebooks jupyter**](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/home.ipynb).
 
 ## Descrição
 
