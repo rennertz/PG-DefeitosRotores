@@ -2,7 +2,7 @@
 
 Este é o meu Projeto de Graduação em Engenharia Mecânica na UFES, defendido no ano 2021. No [**texto**](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/thesis.pdf) é apresentada a fundamentação, a metodologia, os materiais e os resultados. Neste repositório há os códigos utilizados e ainda vários experimentos que não entraram no trabalho.
 
-Em resumo, aqui você encontra os [módulos python](src) utlizados no processamento dos dados de vibração, o [dataset](data/data.csv) gerado e minhas análises em [**notebooks jupyter**](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/home.ipynb).
+Em resumo, aqui você encontra os [módulos python](src) utlizados no processamento dos dados de vibração, o [dataset](data/data.csv) gerado e minhas análises em [**notebooks jupyter**](home.md).
 
 ## Descrição
 
@@ -17,14 +17,17 @@ Dos sinais de vibração, foi feita a extração de características no domínio
 
 ## Base de dados utilizada
 
-Para este trabalho, será utilizada a base de dados [MaFaulDa](http://www02.smt.ufrj.br/~offshore/mfs/page_01.html#SEC1). Para se desenvolver modelos ML, aconselha-se extrair as características mais relevantes dos sinais de vibração, ao invés de utilizá-los de maneira direta. As características utilizadas neste trabalho estão reunidas no arquivo [data.csv](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/data/data.csv). Sinta-se livre para utliiza-las nos seus testes. Entretanto, encorajo a interação com os scripts deste repositório. Aceito tanto sugestões de melhoria, quanto acréscimos de features.
+Para este trabalho, será utilizada a base de dados [MaFaulDa](http://www02.smt.ufrj.br/~offshore/mfs/page_01.html#SEC1). Ao invés de se utilizar os sinais brutos no modelo ML, prefere-se extrair características relevantes dos sinais de vibração. As características escolhidas neste trabalho geraram o dataset [data.csv](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/data/data.csv), que contém 880 exemplos. 
 
-### Gerando a matriz de características localmente (via script)
+### Gerando o dataset localmente (via script)
 
-A base MaFaulda não está presente no repositório. Ela deve ser baixada e descompactada na pasta `mafaulda` no diretório raiz. Nesta pasta devem estar presentes ao menos as subpastas `normal`, `horizontal-misalignment`, `vertical-misalignment` e `imbalance`, que são as condições estudadas. Montado o diretório, basta executar o script [main.py](main.py) e o arquivo com as características *data.csv* será sobrescrito. Abaixo uma pré-visualização do script sendo executado.
+A base MaFaulda não está presente no repositório. Ela deve ser baixada e descompactada na pasta `mafaulda` no diretório raiz. Nesta pasta devem estar presentes ao menos as subpastas `normal`, `horizontal-misalignment`, `vertical-misalignment` e `imbalance`, que são as condições estudadas. 
+
+Montado o diretório, basta executar o script [main.py](main.py) e o arquivo com as características *data.csv* será sobrescrito.
+Para verificar as características extraídas, consulte [features.py](src/features.py).
+Abaixo uma pré-visualização da execução script. 
 
 <p align="center">
   <img src="https://media.giphy.com/media/qreDqbIdpIINndTqZ2/giphy.gif" />
 </p>
 
-Para verificar as características extraídas, acesse [features.py](src/features.py)
