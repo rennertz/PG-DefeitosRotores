@@ -1,6 +1,6 @@
 # PG-DefeitosRotores
 
-Este é o meu Projeto de Graduação em Engenharia Mecânica na UFES, defendido no ano 2021. No [**texto**](thesis.pdf) é apresentada a fundamentação, a metodologia, os materiais e os resultados. Neste repositório há os códigos utilizados e ainda vários experimentos que não entraram no trabalho.
+Este é o meu Projeto de Graduação em Engenharia Mecânica na UFES, defendido no ano 2021. No [**texto**](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/thesis.pdf) é apresentada a fundamentação, a metodologia, os materiais e os resultados. Neste repositório há os códigos utilizados e ainda vários experimentos que não entraram no trabalho.
 
 Em resumo, aqui você encontra os [módulos python](src) utlizados no processamento dos dados de vibração, o [dataset](data/data.csv) gerado e minhas análises em [**notebooks jupyter**](homepage.ipynb).
 
@@ -17,7 +17,7 @@ Dos sinais de vibração, foi feita a extração de características no domínio
 
 ## Base de dados utilizada
 
-Para este trabalho, será utilizada a base de dados [MaFaulDa](http://www02.smt.ufrj.br/~offshore/mfs/page_01.html#SEC1). Para se desenvolver modelos ML, aconselha-se extrair as características mais relevantes dos sinais de vibração, ao invés de utilizá-los de maneira direta. As características utilizadas neste trabalho estão reunidas no arquivo [data.csv](data/data.csv). Sinta-se livre para utliiza-las nos seus testes. Entretanto, encorajo a interação com os scripts deste repositório. Aceito tanto sugestões de melhoria, quanto acréscimos de features.
+Para este trabalho, será utilizada a base de dados [MaFaulDa](http://www02.smt.ufrj.br/~offshore/mfs/page_01.html#SEC1). Para se desenvolver modelos ML, aconselha-se extrair as características mais relevantes dos sinais de vibração, ao invés de utilizá-los de maneira direta. As características utilizadas neste trabalho estão reunidas no arquivo [data.csv](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/data/data.csv). Sinta-se livre para utliiza-las nos seus testes. Entretanto, encorajo a interação com os scripts deste repositório. Aceito tanto sugestões de melhoria, quanto acréscimos de features.
 
 ### Gerando a matriz de características localmente (via script)
 
