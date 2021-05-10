@@ -11,8 +11,8 @@ Visualizaçoes geradas para a análise exploratória dos dados e melhor entendim
 ## Modelagem
 Classificador de defeitos e análise das características utilizadas
 
-* [Classificador linearSVM](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/classification_models/010-general_classification.ipynb)
-* [Visualização dos dados e separabilidade](https://nbviewer.jupyter.org/github/rennertz/PG-DefeitosRotores/blob/main/classification_models/040-2d_plots.ipynb)
+* [Classificador linearSVM](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/classification_models/HTML_version/010-general_classification.ipynb)
+* [Visualização dos dados e separabilidade](https://raw.githubusercontent.com/rennertz/PG-DefeitosRotores/main/classification_models/HTML_version/classification_models/040-2d_plots.ipynb)
 
 <br />
 
